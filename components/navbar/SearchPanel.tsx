@@ -111,32 +111,6 @@ interface LocationContentProps {
   onSelect: (loc: string) => void;
 }
 function LocationContent({ location, onSelect }: LocationContentProps) {
-  // const [results, setResults] = useState(NEPAL_LOCATIONS);
-
-  // useEffect(() => {
-  //   if (!location.trim()) {
-  //     setResults(NEPAL_LOCATIONS); // fall back to defaults
-  //     return;
-  //   }
-
-  //   const timeout = setTimeout(async () => {
-  //     const res = await fetch(
-  //       `https://nominatim.openstreetmap.org/search?q=${location},Nepal&format=json&limit=6`,
-  //     );
-  //     const data = await res.json();
-  //     setResults(
-  //       data.map((d: any) => ({
-  //         name: d.display_name.split(",")[0],
-  //         desc: d.display_name.split(",").slice(1, 3).join(",").trim(),
-  //         bg: "#F3F4F6",
-  //         emoji: "📍",
-  //       })),
-  //     );
-  //   }, 300);
-
-  //   return () => clearTimeout(timeout);
-  // }, [location]);
-
   return (
     <div className="overflow-y-auto max-h-60 md:max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* Search input */}
@@ -193,7 +167,7 @@ function DateContent({
   numMonths = 2,
 }: DateContentProps) {
   return (
-    <div className="flex w-full justify-center overflow-y-auto max-h-60 md:max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex w-full justify-center overflow-y-auto max-h-60 md:max-h-full">
       <Calendar
         mode="single"
         selected={dateRange?.to ?? dateRange?.from}
@@ -234,10 +208,10 @@ function VehicleContent({ vehicleType, onSelect }: VehicleContentProps) {
               type="button"
               onClick={() => onSelect(value)}
               className={cn(
-                "relative flex flex-col items-start gap-2.5 p-4 rounded-xl border-[1.5px] text-left transition-colors cursor-pointer",
+                "relative flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl shadow-sm border text-left transition-colors cursor-pointer",
                 isSelected
                   ? "border-foreground bg-accent/50"
-                  : "border-border hover:border-foreground/40 hover:bg-background",
+                  : "border-border/50 hover:border-foreground/40 hover:bg-background",
               )}
             >
               {/* Checkmark */}
@@ -256,7 +230,7 @@ function VehicleContent({ vehicleType, onSelect }: VehicleContentProps) {
               </div>
 
               {/* Text */}
-              <div>
+              <div className="flex flex-col items-center justify-center text-center">
                 <p className="text-[15px] font-medium">{label}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
               </div>
@@ -310,11 +284,11 @@ function formatDateRange(dateRange: DateRange | undefined): React.ReactNode {
 
 const PANEL_CLASS: Record<NonNullable<FilterType>, string> = {
   location:
-    "absolute top-full mt-3 left-0 w-1/2 max-h-[63vh] bg-card border border-border rounded-2xl p-5 shadow-xl overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden z-50",
+    "absolute top-full mt-3 left-0 w-1/2 bg-card border border-border rounded-2xl p-5 shadow-xl overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden z-50",
   dateRange:
-    "absolute top-full mt-3 left-1/2 -translate-x-1/2 w-full max-h-[75vh] bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xl overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden z-50",
+    "absolute top-full mt-3 left-1/2 -translate-x-1/2 w-full bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xl overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden z-50",
   vehicleType:
-    "absolute top-full mt-3 right-0 w-1/2 max-h-[75vh] bg-card border border-border rounded-2xl p-5 shadow-xl overflow-hidden z-50",
+    "absolute top-full mt-3 right-0 w-1/2 bg-card border border-border rounded-2xl p-5 shadow-xl overflow-hidden z-50",
 };
 
 const PANEL_ORIGIN: Record<NonNullable<FilterType>, string> = {
@@ -664,7 +638,11 @@ export default function SearchPanel({
                     opacity: { duration: 0.15 },
                   }}
                   className={PANEL_CLASS[activeFilter]}
-                  style={{ transformOrigin: PANEL_ORIGIN[activeFilter] }}
+                  style={{
+                    transformOrigin: PANEL_ORIGIN[activeFilter],
+                    maxHeight:
+                      "calc(100dvh - var(--navbar-height, 11.25rem) - 0.75rem)",
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Content cross-fades independently */}
