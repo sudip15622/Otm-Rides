@@ -6,9 +6,20 @@ import { useNavbar } from "@/contexts/NavbarContext";
 import NavCenter from "./NavCenter";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import NavbarSkeleton from "./NavbarSkeleton";
 
 const Navbar = () => {
   const nav = useNavbar();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <NavbarSkeleton />;
+  }
+
+  // return <NavbarSkeleton />;
+
   return (
     <>
       <AnimatePresence>

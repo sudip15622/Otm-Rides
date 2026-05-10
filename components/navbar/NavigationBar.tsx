@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 interface MainPagesProps {
@@ -12,6 +13,7 @@ interface MainPagesProps {
 
 const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
   const hasMounted = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     hasMounted.current = true;
@@ -64,15 +66,25 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
           }}
         >
           {mainPages.map((page, index) => {
+            const isActive = pathname === page.link;
             return (
               <Link
                 key={index}
                 href={page.link}
-                className="flex flex-col sm:flex-row gap-x-2 items-center hover:text-primary text-xs sm:text-sm font-medium sm:font-semibold transition-colors duration-200 ease-in-out group"
+                className={cn(
+                  "flex flex-col sm:flex-row gap-x-2 items-center text-xs sm:text-sm font-medium sm:font-semibold transition-colors duration-200 ease-in-out group",
+                  isActive
+                    ? "border-b-2 border-secondary text-foreground"
+                    : "text-foreground/80 hover:text-foreground",
+                )}
               >
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                   <Image
-                    className="object-cover w-full h-full"
+                    className={cn(
+                      "object-cover w-full h-full",
+                      !isActive &&
+                        "group-hover:scale-105 transition-all duration-200 ease-in-out",
+                    )}
                     src={page.url}
                     alt={page.name}
                     fill

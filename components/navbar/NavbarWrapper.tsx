@@ -3,11 +3,12 @@ import { SearchDraftProvider } from "@/contexts/SearchDraftContext";
 import React, { Suspense } from "react";
 import Link from "next/link";
 import Navbar from "./Navbar";
+import NavbarSkeleton from "./NavbarSkeleton";
 
 const NavbarWrapper = () => {
   return (
     <NavbarProvider>
-      <Suspense>
+      <Suspense fallback={<NavbarSkeleton />}>
         <SearchDraftProvider>
           <Navbar />
         </SearchDraftProvider>

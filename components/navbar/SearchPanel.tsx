@@ -111,31 +111,31 @@ interface LocationContentProps {
   onSelect: (loc: string) => void;
 }
 function LocationContent({ location, onSelect }: LocationContentProps) {
-  const [results, setResults] = useState(NEPAL_LOCATIONS);
+  // const [results, setResults] = useState(NEPAL_LOCATIONS);
 
-  useEffect(() => {
-    if (!location.trim()) {
-      setResults(NEPAL_LOCATIONS); // fall back to defaults
-      return;
-    }
+  // useEffect(() => {
+  //   if (!location.trim()) {
+  //     setResults(NEPAL_LOCATIONS); // fall back to defaults
+  //     return;
+  //   }
 
-    const timeout = setTimeout(async () => {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${location},Nepal&format=json&limit=6`,
-      );
-      const data = await res.json();
-      setResults(
-        data.map((d: any) => ({
-          name: d.display_name.split(",")[0],
-          desc: d.display_name.split(",").slice(1, 3).join(",").trim(),
-          bg: "#F3F4F6",
-          emoji: "📍",
-        })),
-      );
-    }, 300);
+  //   const timeout = setTimeout(async () => {
+  //     const res = await fetch(
+  //       `https://nominatim.openstreetmap.org/search?q=${location},Nepal&format=json&limit=6`,
+  //     );
+  //     const data = await res.json();
+  //     setResults(
+  //       data.map((d: any) => ({
+  //         name: d.display_name.split(",")[0],
+  //         desc: d.display_name.split(",").slice(1, 3).join(",").trim(),
+  //         bg: "#F3F4F6",
+  //         emoji: "📍",
+  //       })),
+  //     );
+  //   }, 300);
 
-    return () => clearTimeout(timeout);
-  }, [location]);
+  //   return () => clearTimeout(timeout);
+  // }, [location]);
 
   return (
     <div className="overflow-y-auto max-h-60 md:max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -157,7 +157,7 @@ function LocationContent({ location, onSelect }: LocationContentProps) {
       </p>
 
       <ul className="flex flex-col gap-0.5">
-        {results.map((loc, index) => (
+        {NEPAL_LOCATIONS.map((loc, index) => (
           <li
             key={`${loc}-${index}`}
             onClick={() => {
@@ -334,6 +334,8 @@ export default function SearchPanel({
   onCloseSearch,
   showFullNav,
 }: SearchPanelProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isSearchPage = pathname === "/search";
@@ -385,141 +387,153 @@ export default function SearchPanel({
       )}
 
       {/* ── Mobile: close button ─────────────────────────────────────────── */}
-      <AnimatePresence>
-        {openSearch && (
-          <motion.button
-            type="button"
-            initial={{ opacity: 0, scale: 0.97, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -6 }}
-            transition={{ type: "spring", stiffness: 400, damping: 40 }}
-            onClick={onCloseSearch}
-            className="absolute z-10 md:hidden top-1/2 -translate-y-2/3 right-0 rounded-full p-2.5 bg-card shadow-md border border-border"
-          >
-            <RxCross2 className="size-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {mounted && (
+        <AnimatePresence>
+          {openSearch && (
+            <motion.button
+              type="button"
+              initial={{ opacity: 0, scale: 0.97, y: -6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -6 }}
+              transition={{ type: "spring", stiffness: 400, damping: 40 }}
+              onClick={onCloseSearch}
+              className="absolute z-10 md:hidden top-1/2 -translate-y-2/3 right-0 rounded-full p-2.5 bg-card shadow-md border border-border"
+            >
+              <RxCross2 className="size-5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* ── Mobile: search drawer ─────────────────────────────────────────── */}
-      <AnimatePresence>
-        {openSearch && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -6 }}
-            transition={{ type: "spring", stiffness: 400, damping: 40 }}
-            className="absolute z-10 md:hidden top-20 left-0 w-full flex flex-col gap-y-4 border border-border"
-          >
-            {/* Location */}
-            <div
-              onClick={() => onFilterClick("location")}
-              className={cn(
-                "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer",
-                activeFilter === "location"
-                  ? "shadow-xl border border-border"
-                  : "shadow-sm",
-              )}
+      {mounted && (
+        <AnimatePresence>
+          {openSearch && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: -6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -6 }}
+              transition={{ type: "spring", stiffness: 400, damping: 40 }}
+              className="fixed z-10 md:hidden top-20 left-0 w-full"
+              style={{ height: "calc(100dvh - 5rem)" }}
             >
-              {activeFilter === "location" ? (
-                <div className="flex flex-col gap-y-2">
-                  <h3 className="text-xl font-bold">Where?</h3>
-                  <LocationContent location={location} onSelect={setLocation} />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-x-5">
-                  <span className="text-sm font-medium">Where</span>
-                  <span className="text-sm truncate">
-                    {location || (
-                      <span className="text-muted-foreground">
-                        Search location
+              <div className="flex flex-col gap-y-4 h-full">
+                {/* Location */}
+                <div
+                  onClick={() => onFilterClick("location")}
+                  className={cn(
+                    "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer transition-all duration-200",
+                    activeFilter === "location"
+                      ? "shadow-xl border border-border flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      : "shadow-sm shrink-0",
+                  )}
+                >
+                  {activeFilter === "location" ? (
+                    <div className="flex flex-col gap-y-2 h-full">
+                      <h3 className="text-xl font-bold shrink-0">Where?</h3>
+                      <LocationContent
+                        location={location}
+                        onSelect={setLocation}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-x-5">
+                      <span className="text-sm font-medium">Where</span>
+                      <span className="text-sm truncate">
+                        {location || (
+                          <span className="text-muted-foreground">
+                            Search location
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Date */}
-            <div
-              onClick={() => onFilterClick("dateRange")}
-              className={cn(
-                "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer",
-                activeFilter === "dateRange"
-                  ? "shadow-xl border border-border"
-                  : "shadow-sm",
-              )}
-            >
-              {activeFilter === "dateRange" ? (
-                <div className="flex flex-col gap-y-2">
-                  <h3 className="text-xl font-bold">When?</h3>
-                  <DateContent
-                    dateRange={dateRange}
-                    onDateChange={handleDate}
-                    numMonths={1}
-                  />
+                {/* Date */}
+                <div
+                  onClick={() => onFilterClick("dateRange")}
+                  className={cn(
+                    "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer transition-all duration-200",
+                    activeFilter === "dateRange"
+                      ? "shadow-xl border border-border flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      : "shadow-sm shrink-0",
+                  )}
+                >
+                  {activeFilter === "dateRange" ? (
+                    <div className="flex flex-col gap-y-2 h-full">
+                      <h3 className="text-xl font-bold shrink-0">When?</h3>
+                      <DateContent
+                        dateRange={dateRange}
+                        onDateChange={handleDate}
+                        numMonths={1}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-x-5">
+                      <span className="text-sm font-medium">When</span>
+                      <span className="text-sm truncate">
+                        {formatDateRange(dateRange)}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-center justify-between gap-x-5">
-                  <span className="text-sm font-medium">When</span>
-                  <span className="text-sm truncate">
-                    {formatDateRange(dateRange)}
-                  </span>
-                </div>
-              )}
-            </div>
 
-            {/* Vehicle type */}
-            <div
-              onClick={() => onFilterClick("vehicleType")}
-              className={cn(
-                "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer",
-                activeFilter === "vehicleType"
-                  ? "shadow-xl border border-border"
-                  : "shadow-sm",
-              )}
-            >
-              {activeFilter === "vehicleType" ? (
-                <div className="flex flex-col gap-y-2">
-                  <h3 className="text-xl font-bold">Which?</h3>
-                  <VehicleContent
-                    vehicleType={vehicleType}
-                    onSelect={setVehicleType}
-                  />
+                {/* Vehicle type */}
+                <div
+                  onClick={() => onFilterClick("vehicleType")}
+                  className={cn(
+                    "flex flex-col gap-y-4 p-4 bg-card rounded-2xl cursor-pointer transition-all duration-200",
+                    activeFilter === "vehicleType"
+                      ? "shadow-xl border border-border flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      : "shadow-sm shrink-0",
+                  )}
+                >
+                  {activeFilter === "vehicleType" ? (
+                    <div className="flex flex-col gap-y-2 h-full">
+                      <h3 className="text-xl font-bold shrink-0">Which?</h3>
+                      <VehicleContent
+                        vehicleType={vehicleType}
+                        onSelect={setVehicleType}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-x-5">
+                      <span className="text-sm font-medium">Which</span>
+                      <span className="text-sm truncate">
+                        {vehicleType || (
+                          <span className="text-muted-foreground">
+                            Select type
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-center justify-between gap-x-5">
-                  <span className="text-sm font-medium">Which</span>
-                  <span className="text-sm truncate">
-                    {vehicleType || (
-                      <span className="text-muted-foreground">Select type</span>
-                    )}
-                  </span>
-                </div>
-              )}
-            </div>
 
-            {/* Mobile actions */}
-            <div className="flex items-center justify-between px-2 sm:px-4">
-              <button
-                type="button"
-                onClick={reset}
-                className="text-sm font-medium bg-transparent outline-none"
-              >
-                Reset
-              </button>
-              <Link
-                href={searchUrl}
-                onClick={onSearchSubmit}
-                className="flex items-center gap-x-2 py-2 px-4 bg-primary text-primary-foreground font-medium rounded-full text-sm"
-              >
-                <IoSearch className="size-4" />
-                Search
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                {/* Mobile actions — always pinned to bottom */}
+                <div className="flex items-center justify-between px-2 sm:px-4 py-4 shrink-0 mt-auto">
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="text-sm font-medium bg-transparent outline-none"
+                  >
+                    Reset
+                  </button>
+                  <Link
+                    href={searchUrl}
+                    onClick={onSearchSubmit}
+                    className="flex items-center gap-x-2 py-2 px-4 bg-primary text-primary-foreground font-medium rounded-full text-sm"
+                  >
+                    <IoSearch className="size-4" />
+                    Search
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* ── Desktop: pill bar ─────────────────────────────────────────────── */}
       <LayoutGroup id="searchbar-layout">
@@ -553,7 +567,7 @@ export default function SearchPanel({
               />
             )}
             <div className="relative z-10 w-full">
-              {showFullNav && <h4 className="text-sm font-medium">Where</h4>}
+              {showFullNav && <h4 className="text-xs font-medium">Where</h4>}
               <div className="flex items-center gap-x-1">
                 {!showFullNav && (
                   <FaMapMarkerAlt className="text-muted-foreground shrink-0" />
@@ -586,7 +600,7 @@ export default function SearchPanel({
               />
             )}
             <div className="relative z-10 w-full">
-              {showFullNav && <h4 className="text-sm font-medium">When</h4>}
+              {showFullNav && <h4 className="text-xs font-medium">When</h4>}
               <div className="flex items-center gap-x-1 truncate">
                 {!showFullNav && (
                   <IoIosAlarm className="text-muted-foreground shrink-0" />
@@ -615,7 +629,7 @@ export default function SearchPanel({
               />
             )}
             <div className="relative z-10 w-full">
-              {showFullNav && <h4 className="text-sm font-medium">Which</h4>}
+              {showFullNav && <h4 className="text-xs font-medium">Which</h4>}
               <div className="flex items-center gap-x-1">
                 {!showFullNav && (
                   <GiFullMotorcycleHelmet className="text-muted-foreground shrink-0" />
@@ -635,28 +649,30 @@ export default function SearchPanel({
           </div>
 
           {/* Desktop: dropdown panel */}
-          <AnimatePresence>
-            {activeFilter && (
-              <motion.div
-                // ✅ Stable key — same element persists across filter changes
-                key="filter-panel"
-                layout // smoothly animates size/position changes
-                initial={{ opacity: 0, scale: 0.97, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: -6 }}
-                transition={{
-                  layout: { type: "spring", stiffness: 400, damping: 40 },
-                  opacity: { duration: 0.15 },
-                }}
-                className={PANEL_CLASS[activeFilter]}
-                style={{ transformOrigin: PANEL_ORIGIN[activeFilter] }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Content cross-fades independently */}
-                {renderPanelContent()}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {mounted && (
+            <AnimatePresence>
+              {activeFilter && (
+                <motion.div
+                  // ✅ Stable key — same element persists across filter changes
+                  key="filter-panel"
+                  layout // smoothly animates size/position changes
+                  initial={{ opacity: 0, scale: 0.97, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.97, y: -6 }}
+                  transition={{
+                    layout: { type: "spring", stiffness: 400, damping: 40 },
+                    opacity: { duration: 0.15 },
+                  }}
+                  className={PANEL_CLASS[activeFilter]}
+                  style={{ transformOrigin: PANEL_ORIGIN[activeFilter] }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Content cross-fades independently */}
+                  {renderPanelContent()}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
 
           {/* Desktop: search button */}
           <AnimatePresence>
