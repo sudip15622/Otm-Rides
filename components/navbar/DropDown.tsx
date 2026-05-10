@@ -44,7 +44,7 @@ const DropDown = () => {
       </button>
 
       {isOpen ? (
-        <div className="absolute top-12 right-0 min-w-60 overflow-hidden rounded-2xl border border-border/40 bg-background py-2 shadow-2xl">
+        <div className="absolute top-12 right-0 min-w-60 overflow-hidden rounded-2xl border border-border/40 bg-background py-2 shadow-xl">
           <DropDownItem name="Explore" link="/search" icon={Search} />
           <DropDownItem name="Help Center" link="/search" icon={HelpCircle} />
           <div className="w-full h-px bg-border my-2" />
