@@ -1,25 +1,37 @@
-import FacebookButton from "@/components/auth/FacebookButton";
+import AppleButton from "@/components/auth/AppleButton";
 import GoogleButton from "@/components/auth/GoogleButton";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { FaArrowLeft } from "react-icons/fa6";
 
-const page = () => {
+const Page = () => {
   return (
-    <main className="relative w-full min-h-screen mx-auto px-4 sm:px-8 md:px-12 lg:px-16">
-      <Image
-        src="/login_cover.png"
-        alt="login-cover"
-        fill
-        className="object-cover"
-        sizes="1400px"
-        priority
-      />
-
-      <div className="relative z-10 pt-24 w-1/2 h-screen ml-auto">
-        {/* Page content goes here (overlayed above the background image) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm m-auto bg-card rounded-4xl border border-border p-8 flex flex-col items-center gap-8">
-          <Link href="/" className="flex w-fit justify-center items-center">
+    <main className="relative mx-auto flex min-h-dvh w-full items-center justify-center bg-background/50 px-3 py-4 sm:px-8 sm:py-8 md:px-12 lg:px-16">
+      <div className="mx-auto flex w-full max-w-6xl overflow-hidden rounded-3xl border border-border/50 bg-card shadow-xl sm:rounded-4xl sm:flex-row">
+        <div className="relative hidden min-h-140 w-1/2 sm:flex lg:w-[60%]">
+          <Image
+            src="/login_cover.jpg"
+            alt="login-cover"
+            fill
+            className="object-cover w-full h-full"
+            sizes="400px"
+            priority
+          />
+        </div>
+        <div className="relative flex w-full flex-col items-center justify-start gap-5 px-4 pb-8 pt-14 sm:w-1/2 sm:justify-center sm:gap-6 sm:px-8 sm:py-8 lg:w-[40%] lg:px-16">
+          <Link
+            href="/"
+            title="Go Back"
+            className="absolute top-4 left-4 w-fit p-2 flex items-center justify-center rounded-full bg-accent/50 hover:bg-accent transition-colors duration-200 ease-in-out"
+          >
+            <FaArrowLeft className="size-4 text-foreground/70" />
+          </Link>
+          <Link
+            href="/"
+            title="Home"
+            className="flex w-fit justify-center items-center"
+          >
             <div className="relative w-10 h-10">
               <Image
                 src="/otmrides1.png"
@@ -37,14 +49,14 @@ const page = () => {
             <p className="text-muted-foreground">Ride anything. Anywhere.</p>
           </div>
 
-          <div className="flex flex-col gap-6 w-full">
+          <div className="flex w-full max-w-sm flex-col gap-4 sm:gap-6">
             <GoogleButton />
-            <FacebookButton />
+            <AppleButton />
           </div>
 
-          <p className="text-muted-foreground text-xs text-center">
-            By clicking the Sign In buttons above, you agree to the otmrides
-            Terms of Service and acknowledge the Privacy Notice.
+          <p className="max-w-sm text-center text-xs text-muted-foreground">
+            By signing in, you agree to the otmrides Terms of Service and
+            acknowledge the Privacy Notice.
           </p>
         </div>
       </div>
@@ -52,4 +64,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
