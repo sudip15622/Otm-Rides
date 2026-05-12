@@ -8,13 +8,15 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import NavbarSkeleton from "./NavbarSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const nav = useNavbar();
+  const { user, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return <NavbarSkeleton />;
   }
 
@@ -74,6 +76,21 @@ const Navbar = () => {
             >
               Become a host
             </Link>
+            {user && (
+              <Link
+                href="/profile"
+                className="relative w-10 h-10 overflow-hidden rounded-full"
+              >
+                <Image
+                  src={user.avatar}
+                  fill
+                  sizes="40px"
+                  priority
+                  alt="user-avatar"
+                  className="object-cover w-full h-full"
+                />
+              </Link>
+            )}
             <DropDown />
           </div>
         </nav>

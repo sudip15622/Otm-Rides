@@ -5,7 +5,7 @@ import { IoSearch } from "react-icons/io5";
 import Link from "next/link";
 import { FaPerson } from "react-icons/fa6";
 import { MdOutlineCameraswitch } from "react-icons/md";
-import { User } from "@/lib/types/types";
+import { User } from "@/types/types";
 
 interface ActionFootProps {
   user: User | null;

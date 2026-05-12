@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
+// import "@/lib/interceptors";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,7 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextTopLoader color="oklch(0.45 0.15 255)" showSpinner={false} />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
