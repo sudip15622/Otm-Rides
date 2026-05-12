@@ -27,7 +27,7 @@ api.interceptors.response.use(
     // Don't try to refresh if the failing request IS the refresh endpoint
     // (avoids infinite loop if refresh itself returns 401)
     if (originalRequest.url?.includes("/auth/refresh")) {
-      window.location.href = "/login";
+      // window.location.href = "/login";
       return Promise.reject(error);
     }
 
@@ -48,7 +48,7 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError);
-      window.location.href = "/login";
+      // window.location.href = "/login-signup";
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

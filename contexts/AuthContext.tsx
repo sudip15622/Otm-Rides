@@ -4,10 +4,14 @@ import api from "@/lib/axios";
 import { User } from "@/types/types";
 import "@/lib/interceptors";
 
+const BACKEND_API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  //   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (returnTo?: string) => void;
+  loginWithApple: (returnTo?: string) => void;
   logout: () => Promise<void>;
 }
 
@@ -17,32 +21,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // On app load, check if we have a valid session
   useEffect(() => {
     api
       .get("/auth/me")
-      .then((res) => {
-        console.log(res.data);
-        setUser(res.data);
-      })
+      .then((res) => setUser(res.data))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
-  // ^ The interceptor handles token refresh here too if needed
 
-  //   const login = async (email: string, password: string) => {
-  //     const res = await api.post("/auth/login", { email, password });
-  //     setUser(res.data.user); // backend already set cookies
-  //   };
+  const buildAuthUrl = (provider: "google" | "apple", returnTo = "/") => {
+    const url = new URL(`${BACKEND_API_URL}/auth/${provider}/login`);
+    url.searchParams.set("state", returnTo);
+    return url.toString();
+  };
+
+  const loginWithGoogle = (returnTo = "/") => {
+    window.location.href = buildAuthUrl("google", returnTo);
+  };
+
+  const loginWithApple = (returnTo = "/") => {
+    window.location.href = buildAuthUrl("apple", returnTo);
+  };
 
   const logout = async () => {
-    await api.post("/auth/logout"); // backend clears cookies
+    await api.post("/auth/logout");
     setUser(null);
     window.location.href = "/";
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, loginWithGoogle, loginWithApple, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/login-signup", "/search", "/vehicles"];
+const PROTECTED_ROUTES = [
+  "/profile",
+  "/trips",
+  "/account-settings",
+  "/hosting",
+];
 const AUTH_ROUTES = ["/login-signup"];
 
 export function proxy(request: NextRequest) {
@@ -9,10 +14,12 @@ export function proxy(request: NextRequest) {
 
   const hasSession = request.cookies.has("refresh_token");
 
-  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
   const isAuth = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
-  if (!hasSession && !isPublic) {
+  if (!hasSession && isProtected) {
     const loginUrl = new URL("/login-signup", request.url);
     loginUrl.searchParams.set(
       "returnTo",

@@ -91,7 +91,7 @@ const Navbar = () => {
                 />
               </Link>
             )}
-            <DropDown />
+            <DropDown user={user} />
           </div>
         </nav>
       </div>

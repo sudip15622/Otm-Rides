@@ -1,9 +1,23 @@
 "use client";
 import { useEffect, useRef, useState, type ElementType } from "react";
-import { LogIn, Menu, Search, User2, HelpCircle } from "lucide-react";
-import { FaPerson } from "react-icons/fa6";
+import {
+  LogIn,
+  Menu,
+  Search,
+  User2,
+  HelpCircle,
+  Bike,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { User } from "@/types/types";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface DropDownProps {
+  user: User | null;
+}
 
 interface DropDownItemProps {
   name: string;
@@ -11,9 +25,11 @@ interface DropDownItemProps {
   icon: ElementType;
 }
 
-const DropDown = () => {
+const DropDown = ({ user }: DropDownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const { logout } = useAuth(); // ← pull logout from context
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent | TouchEvent) => {
@@ -31,6 +47,15 @@ const DropDown = () => {
     };
   }, []);
 
+  const performSignOut = async () => {
+    setLoading(true);
+    try {
+      await logout();
+    } finally {
+      setLoading(false); // logout() redirects, but just in case
+    }
+  };
+
   return (
     <div ref={dropdownRef} className="relative">
       <button
@@ -45,7 +70,23 @@ const DropDown = () => {
 
       {isOpen ? (
         <div className="absolute top-12 right-0 min-w-60 overflow-hidden rounded-2xl border border-border/40 bg-background py-2 shadow-xl">
+          {user && (
+            <>
+              <DropDownItem name="Trips" link="/trips" icon={Bike} />
+              <DropDownItem name="Profile" link="/profile" icon={User2} />
+            </>
+          )}
           <DropDownItem name="Explore" link="/search" icon={Search} />
+          {user && (
+            <>
+              <div className="w-full h-px bg-border my-2" />
+              <DropDownItem
+                name="Account Settings"
+                link="/account-settings"
+                icon={Settings}
+              />
+            </>
+          )}
           <DropDownItem name="Help Center" link="/search" icon={HelpCircle} />
           <div className="w-full h-px bg-border my-2" />
           <Link
@@ -76,11 +117,25 @@ const DropDown = () => {
             </div>
           </Link>
           <div className="w-full h-px bg-border my-2" />
-          <DropDownItem
-            name="Login / Signup"
-            link="/login-signup"
-            icon={LogIn}
-          />
+          {user ? (
+            <button
+              onClick={performSignOut}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-accent/50 transition-colors duration-200 ease-in-out w-full cursor-pointer relative disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <LogOut className="size-4 shrink-0" />
+              Log out
+              {loading && (
+                <span className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-border border-t-foreground animate-spin" />
+              )}
+            </button>
+          ) : (
+            <DropDownItem
+              name="Login / Signup"
+              link="/login-signup"
+              icon={LogIn}
+            />
+          )}
         </div>
       ) : null}
     </div>
