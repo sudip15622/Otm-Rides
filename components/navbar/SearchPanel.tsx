@@ -17,6 +17,7 @@ import { useSearchDraft } from "@/contexts/SearchDraftContext";
 import { type FilterType } from "@/contexts/NavbarContext";
 import { Check, Navigation, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,16 +80,14 @@ const VEHICLE_TYPES = [
   {
     value: "Bike" as VehicleType,
     label: "Bike",
-    icon: FaMotorcycle,
+    image: "/type_bike.png",
     desc: "Motorcycle & sport bikes",
-    bg: "#FEF3C7",
   },
   {
     value: "Scooter" as VehicleType,
     label: "Scooter",
-    icon: RiEBikeLine,
+    image: "/type_scooter.png",
     desc: "Electric & city scooters",
-    bg: "#DBEAFE",
   },
 ] as const;
 
@@ -112,7 +111,7 @@ interface LocationContentProps {
 }
 function LocationContent({ location, onSelect }: LocationContentProps) {
   return (
-    <div className="overflow-y-auto max-h-60 md:max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="overflow-y-auto max-h-60 md:max-h-full">
       {/* Search input */}
       <div className="relative mb-4">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -195,43 +194,38 @@ interface VehicleContentProps {
 }
 function VehicleContent({ vehicleType, onSelect }: VehicleContentProps) {
   return (
-    <div className="py-1">
+    <div className="py-1 overflow-y-auto max-h-60 md:max-h-full">
       <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3 px-0.5">
         Vehicle type
       </p>
-      <div className="grid grid-cols-2 gap-2.5">
-        {VEHICLE_TYPES.map(({ label, icon: Icon, value, desc, bg }) => {
+      <div className="grid grid-cols-1 gap-4">
+        {VEHICLE_TYPES.map(({ label, image, value, desc }) => {
           const isSelected = vehicleType === value;
           return (
             <button
               key={value}
               type="button"
               onClick={() => onSelect(value)}
+              aria-pressed={isSelected}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl shadow-sm border text-left transition-colors cursor-pointer",
+                "relative flex items-center gap-4 p-3 rounded-lg shadow-sm border transition-colors text-left cursor-pointer focus:outline-none",
                 isSelected
-                  ? "border-foreground bg-accent/50"
+                  ? "border-foreground bg-accent/60"
                   : "border-border/50 hover:border-foreground/40 hover:bg-background",
               )}
             >
-              {/* Checkmark */}
-              {isSelected && (
-                <span className="absolute top-3 right-3 size-5 rounded-full bg-foreground flex items-center justify-center">
-                  <Check className="size-3 text-background stroke-[2.5]" />
-                </span>
-              )}
-
-              {/* Icon */}
-              <div
-                className="size-12 rounded-lg flex items-center justify-center"
-                style={{ background: bg }}
-              >
-                <Icon className="size-6" />
+              <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted-foreground/10 flex items-center justify-center">
+                <Image
+                  src={image}
+                  alt={value}
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
-              {/* Text */}
-              <div className="flex flex-col items-center justify-center text-center">
-                <p className="text-[15px] font-medium">{label}</p>
+              <div className="flex flex-col text-left">
+                <p className="text-sm font-semibold">{label}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
               </div>
             </button>

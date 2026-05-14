@@ -1,4 +1,11 @@
 import api from "./axios";
+import axios from "axios";
+
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -48,7 +55,7 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError);
-      // window.location.href = "/login-signup";
+      // window.dispatchEvent(new CustomEvent("auth:sessionExpired"));
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
