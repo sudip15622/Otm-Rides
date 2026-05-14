@@ -7,7 +7,6 @@ import { DateRange } from "react-day-picker";
 import { IoSearch } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { FaMapMarkerAlt, FaMotorcycle } from "react-icons/fa";
-import { RiEBikeLine } from "react-icons/ri";
 import { IoIosAlarm } from "react-icons/io";
 import { GiFullMotorcycleHelmet } from "react-icons/gi";
 import Link from "next/link";
