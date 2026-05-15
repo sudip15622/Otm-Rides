@@ -611,7 +611,7 @@ export default function SearchPanel({
             <ClearButton
               onClick={() => setVehicleType("")}
               visible={activeFilter === "vehicleType" && !!vehicleType}
-              offsetRight="right-20"
+              offsetRight="lg:right-36 right-18"
             />
           </div>
 
@@ -651,16 +651,25 @@ export default function SearchPanel({
               <motion.div
                 className="absolute top-1/2 -translate-y-1/2 right-2 z-20"
                 initial={false}
-                animate={{ opacity: 1 }}
+                animate={{
+                  opacity: 1,
+                }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
               >
                 <Link
                   href={searchUrl}
                   onClick={onSearchSubmit}
-                  className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity"
+                  className={cn(
+                    "flex w-full h-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-[opacity, width] duration-220 ease-in-out",
+                    activeFilter ? "w-12 lg:w-30" : "w-12",
+                  )}
                 >
-                  <IoSearch className="size-5" />
+                  <IoSearch className="size-5 shrink-0" />
+                  {activeFilter && (
+                    <span className="hidden lg:inline-block font-medium text-sm pl-2">
+                      Search
+                    </span>
+                  )}
                 </Link>
               </motion.div>
             )}

@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const NavbarSkeleton = () => {
   return (
-    <div className="sticky z-50 top-0 w-full flex py-6 px-4 sm:px-8 md:px-12 lg:px-16 h-45 bg-background shadow-sm">
+    <div className="sticky z-50 top-0 w-full flex py-6 px-4 sm:px-8 md:px-12 lg:px-16 h-44 bg-background shadow-sm">
       <div className="relative w-full flex items-start justify-between gap-x-10">
         {/* ── Logo (left) ───────────────────────────────────────────────── */}
         <div className="hidden md:flex items-center gap-2 h-12 shrink-0">
@@ -38,7 +38,10 @@ const NavbarSkeleton = () => {
           {/* ── SearchPanel skeleton ── */}
 
           {/* Mobile: single wide pill button */}
-          <Skeleton className="flex md:hidden w-full h-12 rounded-full mb-6" />
+          <div className="flex items-center justify-center md:hidden w-full h-12 rounded-full border border-border shadow-sm py-4 px-8 bg-card mb-6 gap-x-2">
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="w-30 h-4 rounded-full" />
+          </div>
 
           {/* Desktop: 3-pill search bar — h-16 matches showFullNav=true */}
           <div className="relative hidden md:grid grid-cols-3 w-full h-16 rounded-full border border-border overflow-hidden">

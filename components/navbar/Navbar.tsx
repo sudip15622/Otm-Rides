@@ -46,7 +46,7 @@ const Navbar = () => {
             : nav.activeFilter
               ? "bg-card"
               : "bg-card md:bg-background",
-          nav.showFullNav ? (nav.openSearch ? "h-screen" : "h-45") : "h-24",
+          nav.showFullNav ? (nav.openSearch ? "h-screen" : "h-44") : "h-24",
         )}
       >
         <nav className="relative w-full flex items-start justify-between gap-x-10">
@@ -64,7 +64,7 @@ const Navbar = () => {
                 priority
               />
             </div>
-            <div className="hidden xl:flex font-semibold text-[22px] text-primary">
+            <div className="hidden xl:flex font-semibold text-[22px] opacity-90 text-primary">
               otmrides
             </div>
           </Link>

@@ -13,7 +13,7 @@ interface MainPagesProps {
 
 const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
   const hasMounted = useRef(false);
-  const pathname = usePathname();
+  // const pathname = usePathname();
 
   useEffect(() => {
     hasMounted.current = true;
@@ -22,7 +22,7 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
   const mainPages = [
     {
       name: "Vehicles",
-      link: "/",
+      link: "/vehicles",
       url: "/scooter_logo.png",
     },
     {
@@ -66,7 +66,7 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
           }}
         >
           {mainPages.map((page, index) => {
-            const isActive = pathname === page.link;
+            const isActive = page.link === "/vehicles";
             return (
               <Link
                 key={index}

@@ -1,19 +1,21 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { CircleHelp, User2, Bike, Settings } from "lucide-react";
+import { CircleHelp, User2, Bike, Settings, Heart } from "lucide-react";
 import { IoSearch } from "react-icons/io5";
 import Link from "next/link";
 import { FaPerson } from "react-icons/fa6";
 import { MdOutlineCameraswitch } from "react-icons/md";
 import { User } from "@/types/types";
+import { useAuth } from "@/contexts/AuthContext";
+import ActionFootSkeleton from "./ActionFootSkeleton";
 
-interface ActionFootProps {
-  user: User | null;
-}
-
-const ActionFoot = ({ user }: ActionFootProps) => {
+const ActionFoot = () => {
+  const { user, loading } = useAuth();
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollYRef = useRef(0);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const threshold = 8;
@@ -45,6 +47,10 @@ const ActionFoot = ({ user }: ActionFootProps) => {
     };
   }, []);
 
+  if (!mounted || loading) {
+    return <ActionFootSkeleton />;
+  }
+
   return (
     <div
       className={`fixed inset-x-0 bottom-0 z-40 flex md:hidden items-center border-t bg-card px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] will-change-transform transition-transform duration-320 ease-out ${
@@ -52,14 +58,21 @@ const ActionFoot = ({ user }: ActionFootProps) => {
       }`}
     >
       <Link
-        href="/search"
+        href="/"
         className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <IoSearch className="size-5 text-muted-foreground" />
         <span>Explore</span>
       </Link>
+      <Link
+        href="/wishlists"
+        className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <Heart className="size-5 text-muted-foreground" />
+        <span>Wishlists</span>
+      </Link>
 
-      {user ? (
+      {user && (
         <Link
           href="/trips"
           className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -67,33 +80,19 @@ const ActionFoot = ({ user }: ActionFootProps) => {
           <Bike className="size-5 text-muted-foreground" />
           <span>Trips</span>
         </Link>
-      ) : (
-        <Link
-          href="/help"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <CircleHelp className="size-5 text-muted-foreground" />
-          <span>Help</span>
-        </Link>
       )}
 
-      {user?.isHost ? (
-        <Link
-          href="/hosting"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
+      <Link
+        href={user?.isHost ? "/hosting" : "/become-a-host"}
+        className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {user?.isHost ? (
           <MdOutlineCameraswitch className="size-5 text-muted-foreground" />
-          <span>Switch</span>
-        </Link>
-      ) : (
-        <Link
-          href="/become-a-host"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
+        ) : (
           <FaPerson className="size-5 text-muted-foreground" />
-          <span>Host</span>
-        </Link>
-      )}
+        )}
+        <span>Hosting</span>
+      </Link>
 
       {user ? (
         <Link

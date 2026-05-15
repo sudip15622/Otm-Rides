@@ -3,13 +3,15 @@ import { useEffect, useRef, useState, type ElementType } from "react";
 import {
   LogIn,
   Menu,
-  Search,
+  Heart,
   User2,
   HelpCircle,
   Bike,
   Settings,
   LogOut,
+  Search,
 } from "lucide-react";
+import { HiOutlineSwitchVertical } from "react-icons/hi";
 import Link from "next/link";
 import Image from "next/image";
 import { User } from "@/types/types";
@@ -17,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface DropDownProps {
   user: User | null;
+  showSwitch?: boolean;
 }
 
 interface DropDownItemProps {
@@ -25,7 +28,7 @@ interface DropDownItemProps {
   icon: ElementType;
 }
 
-const DropDown = ({ user }: DropDownProps) => {
+const DropDown = ({ user, showSwitch = true }: DropDownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -69,14 +72,25 @@ const DropDown = ({ user }: DropDownProps) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute top-12 right-0 min-w-60 overflow-hidden rounded-2xl border border-border/40 bg-background py-2 shadow-xl">
+        <div className="absolute top-12 right-0 min-w-60 rounded-2xl border border-border/40 bg-background py-2 shadow-xl max-h-[calc(100dvh-6.3rem)] overflow-y-auto">
           {user && (
             <>
+              {!user.isHost && showSwitch && (
+                <div className="xl:hidden">
+                  <DropDownItem
+                    name="Switch to hosting"
+                    link="/hosting"
+                    icon={HiOutlineSwitchVertical}
+                  />
+                  <div className="w-full h-px bg-border my-2" />
+                </div>
+              )}
               <DropDownItem name="Trips" link="/trips" icon={Bike} />
               <DropDownItem name="Profile" link="/profile" icon={User2} />
             </>
           )}
-          <DropDownItem name="Explore" link="/search" icon={Search} />
+          {/* <DropDownItem name="Explore" link="/search" icon={Search} /> */}
+          <DropDownItem name="Wishlists" link="/wishlists" icon={Heart} />
           {user && (
             <>
               <div className="w-full h-px bg-border my-2" />

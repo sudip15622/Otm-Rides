@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Providers } from "./providers";
 // import { SessionGuard } from "@/lib/SessionGuard";
 
 const inter = Inter({
@@ -33,7 +34,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {/* <SessionGuard /> */}
         <NextTopLoader color="oklch(0.45 0.15 255)" showSpinner={false} />
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>
+          <AuthProvider>{children}</AuthProvider>
+        </Providers>
       </body>
     </html>
   );
