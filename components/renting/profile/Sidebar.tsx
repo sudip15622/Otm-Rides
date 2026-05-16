@@ -6,7 +6,7 @@ import Image from "next/image";
 const profileLinks = [
   {
     name: "About Me",
-    link: "/profile",
+    link: "/profile/about",
     image: "/about_mee.png",
   },
   {
@@ -29,7 +29,9 @@ const Sidebar = () => {
       <h1 className="text-3xl font-bold tracking-tight mb-4">Profile</h1>
 
       {profileLinks.map(({ name, link, image }, index) => {
-        const isActive = pathname === link;
+        const isActive =
+          pathname === link ||
+          (link === "/profile/about" && pathname === "/profile");
 
         return (
           <Link

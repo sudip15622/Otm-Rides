@@ -1,117 +1,232 @@
 // app/profile/ProfileClient.tsx
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { getProfile } from "@/lib/api/profile";
-import { queryKeys } from "@/lib/query-keys";
-import Image from "next/image";
+
+import SummarySection from "./SummarySection";
+import { Skeleton } from "@/components/ui/skeleton";
+import { IoNotificationsOutline } from "react-icons/io5";
 import Link from "next/link";
-import { FcRating } from "react-icons/fc";
-import { FaArrowLeft } from "react-icons/fa6";
+import Image from "next/image";
+import { Hand, HelpCircle, LogOut, Settings, User2 } from "lucide-react";
+import { FiChevronRight } from "react-icons/fi";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import SwitchButton from "@/components/footer/SwitchButton";
+import { useRouter } from "next/navigation";
 
-function getFirstName(fullName: string) {
-  return fullName.split(" ")[0];
-}
-
-function getRolesAsString(roles: string[]) {
-  return roles.join(", ");
-}
+const ACCOUNT_NAV_LINKS = [
+  {
+    name: "View Profile",
+    link: "/profile/about",
+    icon: User2,
+  },
+  {
+    name: "Account Settings",
+    link: "/account-settings",
+    icon: Settings,
+  },
+  {
+    name: "Privacy",
+    link: "/account-settings/privacy",
+    icon: Hand,
+  },
+  {
+    name: "Get Help",
+    link: "/help",
+    icon: HelpCircle,
+  },
+];
 
 export default function ProfileClient() {
-  const {
-    data: profile,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: queryKeys.profile,
-    queryFn: getProfile,
-    // interceptor handles 401 + refresh transparently
-  });
+  const router = useRouter();
+  const { user, loading, logout } = useAuth();
+  const [logoutLoading, setlogoutLoading] = useState(false);
 
-  if (isLoading) return <ProfileSkeleton />;
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
 
-  if (isError)
-    return (
-      <div className="text-center py-10 text-destructive">
-        Failed to load profile.
-      </div>
-    );
+  if (!user) {
+    router.push(`/login-signup?returnTo-${encodeURIComponent("/profile")}`);
+    router.refresh();
+    return <ProfileSkeleton />;
+  }
+
+  const performSignOut = async () => {
+    setlogoutLoading(true);
+    try {
+      await logout();
+    } finally {
+      setlogoutLoading(false); // logout() redirects, but just in case
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="fixed w-full z-10 md:z-0 top-0 left-0 md:relative flex items-center justify-between md:justify-start gap-6 py-6 px-4 sm:px-6 md:px-0 bg-card md:bg-none md:py-0">
-        <h1 className="hidden md:block text-3xl font-bold">About Me</h1>
-        <Link
-          href="/profile"
-          className="flex items-center justify-center md:hidden rounded-full bg-accent/50 p-2"
-        >
-          <FaArrowLeft className="size-4 text-foreground/80" />
-        </Link>
-        <Link
-          href="/profile/edit"
-          className="py-2 px-4 font-medium text-xs text-accent-foreground rounded-lg bg-accent/50 hover:bg-accent transition-colors duration-200 ease-in-out"
-        >
-          Edit
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-center">
-        <div className="flex flex-col w-full mx-auto md:mx-0 max-w-sm items-center justify-center gap-4 p-8 shadow-lg hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer rounded-4xl bg-card border border-border/50">
-          {profile?.avatar && (
+    <>
+      <div className="flex flex-col gap-6 w-full max-w-sm mx-auto pt-10 pb-30">
+        {/* //fixed navigation with notification icon */}
+        <SwitchButton />
+        <div className="fixed z-10 w-full top-0 left-0 bg-card py-4 flex items-center justify-end px-4 sm:px-6">
+          <button className="p-2 rounded-full bg-accent/50">
+            <IoNotificationsOutline className="size-5 text-foreground/80" />
+          </button>
+        </div>
+        <div className="flex items-center justify-between gapx-10">
+          <h1 className="text-3xl font-bold">Profile</h1>
+        </div>
+        <div className="flex flex-col gap-4">
+          <Link href="/profile/about">
+            <SummarySection user={user} />
+          </Link>
+
+          <div className="grid grid-cols-2 gap-6">
+            <NavigationCard
+              name="Past trips"
+              link="/profile/past-trips"
+              image="/past_trips.png"
+            />
+            <NavigationCard
+              name="Reviews"
+              link="/profile/reviews"
+              image="/reviews_written.png"
+            />
+          </div>
+
+          <Link
+            href="/become-a-host"
+            className="shrink-0 flex items-center rounded-2xl gap-4 w-full bg-card shadow-md border border-border/50 p-4"
+          >
             <div className="relative w-fit h-fit">
               <Image
-                src={profile.avatar}
-                alt={profile.name}
-                width={96}
-                height={96}
-                className="w-24 h-24 rounded-full object-cover"
+                src="/hostgirl_profile.png"
+                alt="become-a-host"
+                width={48}
+                height={64}
+                priority
+                className="object-cover w-auto h-auto"
               />
             </div>
-          )}
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold">
-              {getFirstName(profile?.name!)}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {getRolesAsString(profile?.roles!)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center md:items-start text-center md:text-start flex-col gap-4 w-full mx-auto md:mx-0 max-w-sm md:max-w-none">
-          <h2 className="text-xl font-semibold">Complete your profile</h2>
-          <p className="text-sm text-muted-foreground leading-tight">
-            Your OtmRides profile is an important part of every reservation.
-            Complete yours to help other hosts and tenants get to know you.
-          </p>
-          <Link
-            href="/profile/edit"
-            className="w-fit mt-2 py-3 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
-          >
-            Get Started
+            <div className="flex flex-col">
+              <h2 className="sm:text-lg text-base font-semibold">
+                Become a host
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                It&apos;s easy to start hosting and earn extra income
+              </p>
+            </div>
           </Link>
         </div>
+
+        <div className="flex flex-col gap-2">
+          {ACCOUNT_NAV_LINKS.map((navlink, index) => {
+            const { name, link, icon: Icon } = navlink;
+            return (
+              <Link
+                key={`${name}-${index}`}
+                href={link}
+                className="flex items-center gap-5 justify-between my-2"
+              >
+                <div className="flex items-center gap-5 text-base text-foreground/80 font-medium">
+                  <Icon className="size-5" />
+                  {name}
+                </div>
+                <FiChevronRight className="size-5 text-muted-foreground" />
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="w-full h-px bg-border" />
+
+        <button
+          onClick={performSignOut}
+          disabled={loading}
+          className="relative flex items-center gap-5 text-base text-foreground/80 font-medium"
+        >
+          <LogOut className="size-5" />
+          Log Out
+          {logoutLoading && (
+            <span className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-border border-t-foreground animate-spin" />
+          )}
+        </button>
       </div>
+    </>
+  );
+}
 
-      <div className="bg-border w-full h-px my-4" />
+interface NavigationCardProps {
+  name: string;
+  link: string;
+  image: string;
+}
 
-      <Link
-        href="/"
-        className="flex items-center gap-2 md:p-2 hover:bg-accent/50 rounded-lg md:-ml-2 w-fit text-foreground/80"
-      >
-        <FcRating className="size-5" />
-        Review OtmRides
-      </Link>
-    </div>
+function NavigationCard({ name, link, image }: NavigationCardProps) {
+  return (
+    <Link
+      href={link}
+      className="bg-card shrink-0 w-full border border-border/50 shadow-md rounded-2xl sm:p-6 p-3 flex flex-col items-center justify-center sm:gap-4 gap-2 text-center"
+    >
+      <div className="relative w-fit h-fit">
+        <Image
+          src={image}
+          alt={name}
+          width={80}
+          height={80}
+          loading="eager"
+          className="w-12 h-12 sm:w-20 sm:h-20 object-cover"
+        />
+      </div>
+      <div className="sm:text-lg text-base font-semibold">{name}</div>
+    </Link>
   );
 }
 
 function ProfileSkeleton() {
   return (
-    <div className="animate-pulse">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-muted" />
-        <div className="space-y-2">
-          <div className="h-4 w-40 bg-muted rounded" />
-          <div className="h-3 w-28 bg-muted rounded" />
+    <div className="w-full max-w-sm mx-auto pb-30">
+      {/* fixed top bar skeleton (switch + notification) */}
+      <div className="fixed z-10 w-full top-0 left-0 bg-card py-4 flex items-center px-4 sm:px-6 justify-end">
+        <Skeleton className="w-10 h-10 rounded-full" />
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <div className="h-14" />
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="w-28 h-8 rounded-md" />
         </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col w-full mx-auto md:mx-0 max-w-sm items-center justify-center gap-4 p-8 shadow-lg rounded-4xl bg-card border border-border/50">
+            <Skeleton className="w-24 h-24 rounded-full" />
+            <div className="text-center">
+              <Skeleton className="w-40 h-6 rounded-md mx-auto" />
+              <Skeleton className="w-24 h-4 rounded-md mx-auto mt-2" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <Skeleton className="w-full h-28 rounded-2xl" />
+            <Skeleton className="w-full h-28 rounded-2xl" />
+          </div>
+
+          <div className="w-full bg-card shadow-md border border-border/50 rounded-2xl p-4 flex items-center gap-4">
+            <Skeleton className="w-12 h-16 rounded-md" />
+            <div className="flex-1">
+              <Skeleton className="w-40 h-6 rounded-md mb-2" />
+              <Skeleton className="w-full max-w-xs h-4 rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 w-full">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="w-full h-12 rounded-md" />
+          ))}
+        </div>
+
+        <div className="w-full h-px bg-border" />
+
+        <Skeleton className="w-full h-12 rounded-md" />
       </div>
     </div>
   );

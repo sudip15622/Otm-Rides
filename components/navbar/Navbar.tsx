@@ -83,9 +83,10 @@ const Navbar = () => {
               >
                 <Image
                   src={user.avatar}
-                  fill
-                  sizes="40px"
-                  priority
+                  width={40}
+                  height={40}
+                  loading="eager"
+                  // priority
                   alt="user-avatar"
                   className="object-cover w-full h-full"
                 />

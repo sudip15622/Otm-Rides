@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { CircleHelp, User2, Bike, Settings, Heart } from "lucide-react";
-import { IoSearch } from "react-icons/io5";
+import { ElementType, useEffect, useRef, useState } from "react";
+import { User2, Bike, LogIn, Heart, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
-import { FaPerson } from "react-icons/fa6";
-import { MdOutlineCameraswitch } from "react-icons/md";
-import { User } from "@/types/types";
 import { useAuth } from "@/contexts/AuthContext";
 import ActionFootSkeleton from "./ActionFootSkeleton";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const ActionFoot = () => {
   const { user, loading } = useAuth();
@@ -57,62 +55,48 @@ const ActionFoot = () => {
         isVisible ? "translate-y-0" : "translate-y-full"
       }`}
     >
-      <Link
-        href="/"
-        className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <IoSearch className="size-5 text-muted-foreground" />
-        <span>Explore</span>
-      </Link>
-      <Link
-        href="/wishlists"
-        className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <Heart className="size-5 text-muted-foreground" />
-        <span>Wishlists</span>
-      </Link>
-
-      {user && (
-        <Link
-          href="/trips"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Bike className="size-5 text-muted-foreground" />
-          <span>Trips</span>
-        </Link>
-      )}
-
-      <Link
-        href={user?.isHost ? "/hosting" : "/become-a-host"}
-        className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        {user?.isHost ? (
-          <MdOutlineCameraswitch className="size-5 text-muted-foreground" />
-        ) : (
-          <FaPerson className="size-5 text-muted-foreground" />
-        )}
-        <span>Hosting</span>
-      </Link>
+      <FootItem name="Explore" link="/" icon={Search} />
+      <FootItem name="Wishlists" link="/wishlists" icon={Heart} />
 
       {user ? (
-        <Link
-          href="/profile"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <User2 className="size-5 text-muted-foreground" />
-          <span>Profile</span>
-        </Link>
+        <>
+          <FootItem name="Trips" link="/trips" icon={Bike} />
+          <FootItem
+            name="Messages"
+            link="/hosting/messages"
+            icon={MessageCircle}
+          />
+          <FootItem name="Profile" link="/profile" icon={User2} />
+        </>
       ) : (
-        <Link
-          href="/login-signup"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <User2 className="size-5 text-muted-foreground" />
-          <span>Login</span>
-        </Link>
+        <FootItem name="Log In or Sign Up" link="/login-signup" icon={LogIn} />
       )}
     </div>
   );
 };
+
+interface FootItemInterface {
+  name: string;
+  link: string;
+  icon: ElementType;
+}
+
+function FootItem({ name, link, icon: Icon }: FootItemInterface) {
+  const pathname = usePathname();
+
+  const isActive = pathname === link;
+  return (
+    <Link
+      href={link}
+      className={cn(
+        "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] transition-colors",
+        isActive ? "text-primary" : "text-foreground/80",
+      )}
+    >
+      <Icon className="size-5" />
+      <span>{name}</span>
+    </Link>
+  );
+}
 
 export default ActionFoot;

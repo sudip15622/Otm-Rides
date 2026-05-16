@@ -1,16 +1,8 @@
 // lib/api/profile.ts
 import api from "@/lib/axios";
+import { User } from "@/types/types";
 
-export interface UserProfile {
-  id: string;
-  name: string;
-  avatar: string;
-  isHost: boolean;
-  roles: string[];
-  createdAt: number;
-}
-
-export const getProfile = async (): Promise<UserProfile> => {
-  const res = await api.get("/user/profile"); // adjust endpoint
+export const getCurrentUser = async (): Promise<User> => {
+  const res = await api.get("/auth/me"); // adjust endpoint
   return res.data;
 };

@@ -18,13 +18,11 @@ export default async function ProfileLayout({
             <Sidebar />
           </aside>
 
-          <main className="min-w-0 flex-1 pt-24 md:pt-12 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 overflow-y-auto md:pb-12 pb-30">
+          <main className="min-w-0 flex-1 py-12 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 overflow-y-auto">
             {children}
           </main>
         </div>
       </div>
-
-      <ActionFoot />
     </div>
   );
 }
