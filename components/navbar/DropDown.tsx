@@ -18,7 +18,7 @@ import { User } from "@/types/types";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface DropDownProps {
-  user: User | null;
+  user: User | undefined;
   showSwitch?: boolean;
 }
 
@@ -72,7 +72,7 @@ const DropDown = ({ user, showSwitch = true }: DropDownProps) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute top-12 right-0 min-w-60 rounded-2xl border border-border/40 bg-background py-2 shadow-xl max-h-[calc(100dvh-6.3rem)] overflow-y-auto">
+        <div className="absolute top-12 right-0 min-w-60 rounded-2xl border border-border/40 bg-background py-2 shadow-xl max-h-[calc(100dvh-6.5rem)] overflow-y-auto">
           {user && (
             <>
               {!user.isHost && showSwitch && (
@@ -145,7 +145,7 @@ const DropDown = ({ user, showSwitch = true }: DropDownProps) => {
             </button>
           ) : (
             <DropDownItem
-              name="Login / Signup"
+              name="Log in / Sign up"
               link="/login-signup"
               icon={LogIn}
             />

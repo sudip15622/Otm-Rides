@@ -46,7 +46,7 @@ const Navbar = () => {
             : nav.activeFilter
               ? "bg-card"
               : "bg-card md:bg-background",
-          nav.showFullNav ? (nav.openSearch ? "h-screen" : "h-44") : "h-24",
+          nav.showFullNav ? (nav.openSearch ? "h-screen" : "h-48") : "h-24",
         )}
       >
         <nav className="relative w-full flex items-start justify-between gap-x-10">

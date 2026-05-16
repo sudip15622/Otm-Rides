@@ -23,17 +23,17 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
     {
       name: "Vehicles",
       link: "/vehicles",
-      url: "/scooter_logo.png",
+      url: "/nav_vehicles.png",
     },
     {
       name: "About",
       link: "/about",
-      url: "/about_logo.png",
+      url: "/nav_about1.png",
     },
     {
       name: "Contact",
       link: "/contact",
-      url: "/contact_logo.png",
+      url: "/nav_contact1.png",
     },
   ];
   return (
@@ -72,13 +72,28 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
                 key={index}
                 href={page.link}
                 className={cn(
-                  "flex flex-col sm:flex-row gap-x-2 items-center text-xs sm:text-sm font-medium sm:font-semibold transition-colors duration-200 ease-in-out group",
+                  "relative flex flex-col sm:flex-row gap-x-2 items-center text-xs sm:text-sm font-medium sm:font-semibold transition-colors duration-200 ease-in-out group",
                   isActive
-                    ? "border-b-2 border-secondary text-foreground"
+                    ? "text-foreground"
                     : "text-foreground/80 hover:text-foreground",
                 )}
               >
-                <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+                <motion.div
+                  className="relative w-10 h-10"
+                  style={{ perspective: 700 }}
+                  initial={{
+                    rotateY: -90,
+                    rotateX: 18,
+                    opacity: 0,
+                    scale: 0.9,
+                  }}
+                  animate={{ rotateY: 0, rotateX: 0, opacity: 1, scale: 1 }}
+                  transition={{
+                    delay: hasMounted.current ? 0 : 0.08 * index,
+                    duration: 1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
                   <Image
                     className={cn(
                       "object-cover w-full h-full",
@@ -89,10 +104,14 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
                     alt={page.name}
                     fill
                     sizes="40px"
+                    loading="eager"
                     priority
                   />
-                </div>
+                </motion.div>
                 {page.name}
+                {isActive && (
+                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-secondary" />
+                )}
               </Link>
             );
           })}

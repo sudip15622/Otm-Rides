@@ -3,7 +3,7 @@
 
 import SummarySection from "./SummarySection";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IoNotificationsOutline } from "react-icons/io5";
+import { FaRegBell } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 import { Hand, HelpCircle, LogOut, Settings, User2 } from "lucide-react";
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import SwitchButton from "@/components/footer/SwitchButton";
 import { useRouter } from "next/navigation";
+import { FaArrowLeft } from "react-icons/fa6";
 
 const ACCOUNT_NAV_LINKS = [
   {
@@ -65,9 +66,15 @@ export default function ProfileClient() {
       <div className="flex flex-col gap-6 w-full max-w-sm mx-auto pt-10 pb-30">
         {/* //fixed navigation with notification icon */}
         <SwitchButton />
-        <div className="fixed z-10 w-full top-0 left-0 bg-card py-4 flex items-center justify-end px-4 sm:px-6">
-          <button className="p-2 rounded-full bg-accent/50">
-            <IoNotificationsOutline className="size-5 text-foreground/80" />
+        <div className="fixed z-10 w-full top-0 left-0 bg-card py-4 flex items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center justify-center md:hidden rounded-full bg-accent/50 p-3"
+          >
+            <FaArrowLeft className="size-4 text-foreground/80" />
+          </Link>
+          <button className="p-3 rounded-full bg-accent/50">
+            <FaRegBell className="size-4 text-foreground/80" />
           </button>
         </div>
         <div className="flex items-center justify-between gapx-10">
@@ -78,7 +85,7 @@ export default function ProfileClient() {
             <SummarySection user={user} />
           </Link>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
             <NavigationCard
               name="Past trips"
               link="/profile/past-trips"

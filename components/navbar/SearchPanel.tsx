@@ -308,6 +308,7 @@ export default function SearchPanel({
   const isSearchPage = pathname === "/search";
 
   const {
+    URLData,
     location,
     setLocation,
     vehicleType,
@@ -346,7 +347,10 @@ export default function SearchPanel({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="flex md:hidden items-center justify-center gap-x-2 rounded-full shadow-sm border border-border transition-shadow py-4 px-8 w-full mb-6 bg-card text-sm font-medium"
+          className={cn(
+            "flex md:hidden items-center justify-center gap-x-2 rounded-full shadow-sm border border-border px-8 mb-6 bg-card text-sm font-medium transition-[shadow, width, padding] duration-320 ease-in-out",
+            showFullNav ? "py-5 w-full" : "py-3 w-fit",
+          )}
         >
           <IoSearch className="size-4" />
           Start your search
@@ -540,7 +544,7 @@ export default function SearchPanel({
                   <FaMapMarkerAlt className="text-muted-foreground shrink-0" />
                 )}
                 <span className="text-sm truncate w-full">
-                  {location || (
+                  {(showFullNav ? location : URLData.location) || (
                     <span className="text-muted-foreground">
                       Search location
                     </span>
@@ -573,7 +577,7 @@ export default function SearchPanel({
                   <IoIosAlarm className="text-muted-foreground shrink-0" />
                 )}
                 <span className="text-sm truncate w-full">
-                  {formatDateRange(dateRange)}
+                  {formatDateRange(showFullNav ? dateRange : URLData.dateRange)}
                 </span>
               </div>
             </div>
@@ -602,7 +606,7 @@ export default function SearchPanel({
                   <GiFullMotorcycleHelmet className="text-muted-foreground shrink-0" />
                 )}
                 <span className="text-sm truncate w-full">
-                  {vehicleType || (
+                  {(showFullNav ? vehicleType : URLData.vehicleType) || (
                     <span className="text-muted-foreground">Select type</span>
                   )}
                 </span>
@@ -634,7 +638,7 @@ export default function SearchPanel({
                   style={{
                     transformOrigin: PANEL_ORIGIN[activeFilter],
                     maxHeight:
-                      "calc(100dvh - var(--navbar-height, 11.25rem) - 0.75rem)",
+                      "calc(100dvh - var(--navbar-height, 12rem) - 0.75rem)",
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >

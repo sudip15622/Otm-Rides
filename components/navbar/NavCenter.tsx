@@ -15,7 +15,7 @@ export default function NavCenter({ nav }: NavCenterProps) {
       //   suppressHydrationWarning
       className={cn(
         "absolute top-0 left-1/2 -translate-x-1/2 w-full flex flex-col items-center transition-all duration-300",
-        nav.showFullNav ? "max-w-4xl" : "lg:max-w-md md:max-w-sm",
+        nav.showFullNav ? "max-w-4xl gap-2" : "lg:max-w-md md:max-w-sm",
       )}
     >
       <NavigationBar

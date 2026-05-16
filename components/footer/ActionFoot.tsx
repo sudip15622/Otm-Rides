@@ -69,7 +69,7 @@ const ActionFoot = () => {
           <FootItem name="Profile" link="/profile" icon={User2} />
         </>
       ) : (
-        <FootItem name="Log In or Sign Up" link="/login-signup" icon={LogIn} />
+        <FootItem name="Log in" link="/login-signup" icon={User2} />
       )}
     </div>
   );
@@ -89,7 +89,7 @@ function FootItem({ name, link, icon: Icon }: FootItemInterface) {
     <Link
       href={link}
       className={cn(
-        "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] transition-colors",
+        "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[10px] sm:text-[12px] transition-colors",
         isActive ? "text-primary" : "text-foreground/80",
       )}
     >

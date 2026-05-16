@@ -13,7 +13,14 @@ import { DateRange } from "react-day-picker";
 
 export type VehicleType = "Bike" | "Scooter" | "";
 
+interface URLDataInterface {
+  location: string;
+  vehicleType: VehicleType;
+  dateRange: DateRange | undefined;
+}
+
 interface SearchDraftContextValue {
+  URLData: URLDataInterface;
   location: string;
   setLocation: (loc: string) => void;
   vehicleType: VehicleType;
@@ -33,17 +40,24 @@ export function SearchDraftProvider({ children }: { children: ReactNode }) {
   const [vehicleType, setVehicleType] = useState<VehicleType>("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
+  const URLData = {
+    location: searchParams.get("location") ?? "",
+    vehicleType: (searchParams.get("vehicleType") as VehicleType) ?? "",
+    dateRange: searchParams.get("pickupDate")
+      ? {
+          from: new Date(searchParams.get("pickupDate") as string),
+          to: searchParams.get("dropoffDate")
+            ? new Date(searchParams.get("dropoffDate") as string)
+            : undefined,
+        }
+      : undefined,
+  };
+
   // One-way sync: URL → draft (on load and back/forward nav)
   useEffect(() => {
-    setLocation(searchParams.get("location") ?? "");
-    setVehicleType((searchParams.get("vehicleType") as VehicleType) ?? "");
-    const from = searchParams.get("pickupDate");
-    const to = searchParams.get("dropoffDate");
-    setDateRange(
-      from
-        ? { from: new Date(from), to: to ? new Date(to) : undefined }
-        : undefined,
-    );
+    setLocation(URLData.location);
+    setVehicleType(URLData.vehicleType);
+    setDateRange(URLData.dateRange);
   }, [searchParams]);
 
   const handleDate = useCallback(
@@ -97,6 +111,7 @@ export function SearchDraftProvider({ children }: { children: ReactNode }) {
   return (
     <SearchDraftContext.Provider
       value={{
+        URLData,
         location,
         setLocation,
         vehicleType,

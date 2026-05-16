@@ -29,13 +29,13 @@ const AboutMe = () => {
         <h1 className="hidden md:block text-3xl font-bold">About Me</h1>
         <Link
           href="/profile"
-          className="flex items-center justify-center md:hidden rounded-full bg-accent/50 p-2"
+          className="flex items-center justify-center md:hidden rounded-full bg-accent/50 p-3"
         >
           <FaArrowLeft className="size-4 text-foreground/80" />
         </Link>
         <Link
           href="/profile/edit"
-          className="py-2 px-4 font-medium text-xs text-accent-foreground rounded-lg bg-accent/50 hover:bg-accent transition-colors duration-200 ease-in-out"
+          className="py-3 md:py-2 px-6 md:px-4 font-medium text-xs text-accent-foreground rounded-full md:rounded-lg bg-accent/50 hover:bg-accent transition-colors duration-200 ease-in-out"
         >
           Edit
         </Link>
