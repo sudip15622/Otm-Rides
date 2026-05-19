@@ -102,14 +102,14 @@ export default function ProfileClient() {
             href="/become-a-host"
             className="shrink-0 flex items-center rounded-2xl gap-4 w-full bg-card shadow-md border border-border/50 p-4"
           >
-            <div className="relative w-fit h-fit">
+            <div className="relative w-12 h-15">
               <Image
                 src="/hostgirl_profile.png"
                 alt="become-a-host"
-                width={48}
-                height={64}
+                fill
+                sizes="48px"
                 priority
-                className="object-cover w-auto h-auto"
+                className="object-cover w-full h-full"
               />
             </div>
             <div className="flex flex-col">

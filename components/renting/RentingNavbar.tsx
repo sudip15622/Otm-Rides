@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import RentingNavbarSkeleton from "./RentingNavbarSkeleton";
 import DropDown from "../navbar/DropDown";
+import Avatar from "../common/Avatar";
 
 const RentingNavbar = () => {
   const { user, loading } = useAuth();
@@ -40,21 +41,7 @@ const RentingNavbar = () => {
           >
             Become a host
           </Link>
-          {user && (
-            <Link
-              href="/profile"
-              className="relative w-10 h-10 overflow-hidden rounded-full"
-            >
-              <Image
-                src={user.avatar}
-                fill
-                sizes="40px"
-                priority
-                alt="user-avatar"
-                className="object-cover w-full h-full"
-              />
-            </Link>
-          )}
+          {user && <Avatar url={user.avatar} />}
           <DropDown user={user} showSwitch={false} />
         </div>
       </nav>

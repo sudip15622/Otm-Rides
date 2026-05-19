@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   //   // },
   // },
   // Disable static optimization for dynamic routes
-  trailingSlash: false,
+  // trailingSlash: false,
   images: {
     remotePatterns: [
       {

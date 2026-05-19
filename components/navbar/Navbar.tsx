@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import NavbarSkeleton from "./NavbarSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import Avatar from "../common/Avatar";
 
 const Navbar = () => {
   const nav = useNavbar();
@@ -76,22 +77,7 @@ const Navbar = () => {
             >
               Become a host
             </Link>
-            {user && (
-              <Link
-                href="/profile"
-                className="relative w-10 h-10 overflow-hidden rounded-full"
-              >
-                <Image
-                  src={user.avatar}
-                  width={40}
-                  height={40}
-                  loading="eager"
-                  // priority
-                  alt="user-avatar"
-                  className="object-cover w-full h-full"
-                />
-              </Link>
-            )}
+            {user && <Avatar url={user.avatar} />}
             <DropDown user={user} />
           </div>
         </nav>
