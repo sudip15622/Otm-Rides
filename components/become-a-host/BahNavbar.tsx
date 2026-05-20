@@ -1,5 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
+import { HelpCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -35,12 +36,21 @@ const BahNavbar = () => {
           />
         </Link>
 
-        <Link
-          href="/hosting"
-          className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm"
-        >
-          Exit
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* <Link
+            href="/hosting"
+            className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm flex items-center gap-2"
+          >
+            <HelpCircle className="size-4" />
+            Get help
+          </Link> */}
+          <Link
+            href="/hosting"
+            className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm"
+          >
+            Exit
+          </Link>
+        </div>
       </nav>
     </div>
   );

@@ -66,7 +66,7 @@ export default function ProfileClient() {
       <div className="flex flex-col gap-6 w-full max-w-sm mx-auto pt-10 pb-30">
         {/* //fixed navigation with notification icon */}
         <SwitchButton />
-        <div className="fixed z-10 w-full top-0 left-0 bg-card py-4 flex items-center justify-between px-4 sm:px-6">
+        <div className="fixed z-10 w-full top-0 left-0 bg-card py-6 flex items-center justify-between px-4 sm:px-6">
           <Link
             href="/"
             className="flex items-center justify-center md:hidden rounded-full bg-accent/50 p-3"

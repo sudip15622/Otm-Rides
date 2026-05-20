@@ -33,7 +33,7 @@ const NavigationBar = ({ showFullNav, openSearch }: MainPagesProps) => {
     {
       name: "Contact",
       link: "/contact",
-      url: "/nav_contact1.png",
+      url: "/nav_contact2.png",
     },
   ];
   return (

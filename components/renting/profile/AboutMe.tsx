@@ -25,7 +25,7 @@ const AboutMe = () => {
 
   return (
     <div className="flex flex-col gap-6 pt-10 md:pt-0">
-      <div className="fixed w-full z-10 md:z-0 top-0 left-0 md:relative flex items-center justify-between md:justify-start gap-6 py-4 px-4 sm:px-6 md:px-0 bg-card md:bg-none md:py-0">
+      <div className="fixed w-full z-10 md:z-0 top-0 left-0 md:relative flex items-center justify-between md:justify-start gap-6 py-6 px-4 sm:px-6 md:px-0 bg-card md:bg-none md:py-0">
         <h1 className="hidden md:block text-3xl font-bold">About Me</h1>
         <Link
           href="/profile"
