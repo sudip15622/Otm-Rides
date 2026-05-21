@@ -7,6 +7,7 @@ const PROTECTED_ROUTES = [
   "/trips",
   "/account-settings",
   "/hosting",
+  "/become-a-host",
 ];
 
 const AUTH_ROUTES = ["/login-signup"];

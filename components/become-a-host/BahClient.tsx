@@ -7,6 +7,10 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import BahFooter from "./BahFooter";
+import BahClientSkeleton from "./BahClientSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { getListingDrafts } from "@/lib/api/become-a-host";
 
 interface DraftItem {
   id: string;
@@ -60,23 +64,37 @@ const PHASES_TO_LIST = [
 ];
 
 const BahClient = () => {
+  const {
+    data: listingDrafts,
+    isLoading: loading,
+    isError,
+  } = useQuery({
+    queryKey: queryKeys.currentUser,
+    queryFn: getListingDrafts,
+  });
+
+  console.log(listingDrafts);
+
+  if (loading) {
+    return <BahClientSkeleton />;
+  }
+
+  if (isError) {
+    return <div>Cant fetch listing drafts.</div>;
+  }
+
   return (
     <>
-      {DEMO_DRAFTS.length > 0 ? (
+      {listingDrafts && listingDrafts.length > 0 ? (
         <div className="flex flex-col w-full max-w-2xl mx-auto gap-8">
           <h1 className="text-3xl font-semibold">Welcome back, Sudip</h1>
 
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-semibold">Finish your listing</h2>
             <div className="flex flex-col gap-4">
-              {DEMO_DRAFTS.map((draft, index) => {
-                const {
-                  id,
-                  displayName,
-                  vehicleType,
-                  draftLastSavedAt,
-                  draftStep,
-                } = draft;
+              {listingDrafts.map((draft, index) => {
+                const { id, displayName, model, draftLastSavedAt, draftStep } =
+                  draft;
                 const totalSteps = 8;
                 const progress = Math.round((draftStep * 100) / totalSteps);
                 return (
@@ -99,7 +117,7 @@ const BahClient = () => {
                           <h3 className="font-medium sm:text-lg text-base">
                             {displayName
                               ? displayName
-                              : `Your ${vehicleType ? vehicleType : "Vehicle"} listing`}
+                              : `Your ${model?.type ? model.type : "Vehicle"} listing`}
                           </h3>
                           <p className="sm:text-sm text-xs">{`Last edited ${draftLastSavedAt} ago`}</p>
                         </div>

@@ -14,3 +14,13 @@ export interface UserProfile {
   roles: string[];
   createdAt: number;
 }
+
+export interface ListingDraft {
+  id: string;
+  displayName: string | null;
+  draftStep: number;
+  draftLastSavedAt: Date;
+  model: {
+    type: VehicleType;
+  } | null;
+}
