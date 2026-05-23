@@ -20,7 +20,7 @@ const BahNavbar = () => {
   return (
     <div
       className={cn(
-        "flex bg-card sticky z-50 top-0 w-full py-6 px-4 sm:px-8 md:px-12 lg:px-16 transition-colors duration-200 h-24",
+        "flex items-center bg-card sticky z-50 top-0 w-full py-6 px-4 sm:px-8 md:px-12 lg:px-16 transition-colors duration-200 h-24",
         isScrolled && "shadow-sm",
       )}
     >

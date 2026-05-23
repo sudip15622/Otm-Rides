@@ -2,6 +2,7 @@
 export const queryKeys = {
   currentUser: ["currentUser"] as const,
   listingDrafts: ["listingDrafts"] as const,
+  draft: (vehicleId: string) => ["draft", vehicleId] as const,
   // add more as your app grows
   // bookings: ["bookings"] as const,
 };
