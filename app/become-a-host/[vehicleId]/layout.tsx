@@ -1,16 +1,13 @@
-// app/become-a-host/[vehicleId]/layout.tsx
-// import { HostingShell } from '@/components/become-a-host/hosting-shell'
+import { HostingShell } from "@/components/become-a-host/HostingShell";
 
-export default function DraftLayout({
+export default async function DraftLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { vehicleId: string };
+  params: Promise<{ vehicleId: string }>;
 }) {
-  return (
-    // <HostingShell vehicleId={params.vehicleId}>
-    { children }
-    // </HostingShell>
-  );
+  const { vehicleId } = await params;
+
+  return <HostingShell vehicleId={vehicleId}>{children}</HostingShell>;
 }

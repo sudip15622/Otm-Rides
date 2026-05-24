@@ -12,36 +12,6 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { getListingDrafts } from "@/lib/api/become-a-host";
 
-interface DraftItem {
-  id: string;
-  vehicleType?: string;
-  displayName?: string;
-  draftLastSavedAt: string;
-  draftStep: number;
-}
-
-const DEMO_DRAFTS: DraftItem[] = [
-  {
-    id: "1",
-    displayName: "My Red Activa",
-    draftLastSavedAt: "2 minutes",
-    draftStep: 2,
-  },
-  {
-    id: "2",
-    vehicleType: "Bike",
-    draftLastSavedAt: "4 days",
-    draftStep: 4,
-  },
-  {
-    id: "3",
-    vehicleType: "Bike",
-    displayName: "BMW R9T - Perfect for rides",
-    draftLastSavedAt: "1 days",
-    draftStep: 3,
-  },
-];
-
 const PHASES_TO_LIST = [
   {
     title: "Tell us about your vehicle",
@@ -65,11 +35,11 @@ const PHASES_TO_LIST = [
 
 const BahClient = () => {
   const {
-    data: listingDrafts,
+    data: listingDrafts = [],
     isLoading: loading,
     isError,
   } = useQuery({
-    queryKey: queryKeys.currentUser,
+    queryKey: queryKeys.listingDrafts,
     queryFn: getListingDrafts,
   });
 
@@ -106,7 +76,7 @@ const BahClient = () => {
                       <RiDeleteBin6Line className="size-4" />
                     </button>
                     <Link
-                      href="/"
+                      href={`/become-a-host/${id}/steps/${draftStep}`}
                       className="sm:p-6 p-4 p w-full rounded-xl border border-border flex flex-col gap-6 hover:bg-accent/30 hover:border-secondary/80 transition-colors duration-200 ease-in-out"
                     >
                       <div className="flex items-start gap-4">

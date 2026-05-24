@@ -16,7 +16,7 @@ const Avatar = ({ url }: AvatarProps) => {
     >
       {url ? (
         <Image
-          src={url}
+          src={url || "default_user.png"}
           width={40}
           height={40}
           priority
