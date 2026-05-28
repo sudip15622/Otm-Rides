@@ -22,6 +22,14 @@ export async function deleteDraft(vehicleId: string): Promise<void> {
   await api.delete(`/host/vehicles/${vehicleId}`);
 }
 
+// lib/api/host.ts
+export async function advanceStepApi(vehicleId: string, step: number) {
+  const res = await api.patch(
+    `/host/vehicles/${vehicleId}/step/${step}/advance`,
+  );
+  return res.data;
+}
+
 export async function submitVehicleApi(
   vehicleId: string,
 ): Promise<DraftVehicle> {
@@ -101,16 +109,16 @@ export async function getUploadSignature(
 // ── Public: Brands, Models, Features ─────────────────────────────────────────
 
 export async function getBrands() {
-  const res = await api.get("/vehicles/brands");
+  const res = await api.get("host/vehicles/brands");
   return res.data;
 }
 
 export async function getModelsByBrand(brandId: string) {
-  const res = await api.get(`/vehicles/brands/${brandId}/models`);
+  const res = await api.get(`host/vehicles/brands/${brandId}/models`);
   return res.data;
 }
 
 export async function getFeatures() {
-  const res = await api.get("/vehicles/features");
+  const res = await api.get("host/vehicles/features");
   return res.data;
 }

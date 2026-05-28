@@ -6,11 +6,18 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import BahFooter from "./BahFooter";
 import BahClientSkeleton from "./BahClientSkeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getListingDrafts } from "@/lib/api/become-a-host";
+import {
+  createDraft,
+  deleteDraft,
+  getListingDrafts,
+} from "@/lib/api/become-a-host";
+import { useRouter } from "next/navigation";
+import { ListingDraft } from "@/types/types";
+import { toast } from "sonner";
+import { formatDate } from "@/lib/formatDate";
 
 const PHASES_TO_LIST = [
   {
@@ -34,6 +41,7 @@ const PHASES_TO_LIST = [
 ];
 
 const BahClient = () => {
+  const router = useRouter();
   const {
     data: listingDrafts = [],
     isLoading: loading,
@@ -45,12 +53,68 @@ const BahClient = () => {
 
   console.log(listingDrafts);
 
+  const queryClient = useQueryClient();
+
+  const { mutate: createMutate, isPending: createPending } = useMutation({
+    mutationFn: createDraft,
+    onSuccess: (draft) => {
+      queryClient.setQueryData(
+        queryKeys.listingDrafts,
+        (old: ListingDraft[] = []) => [...old, draft],
+      );
+      router.push(`/become-a-host/${draft.id}/steps/1`);
+    },
+    onError: (error: any) => {
+      if (error?.response?.status === 403) {
+        toast.error(
+          "You have 3 drafts already. Delete one to start a new listing.",
+        );
+      } else {
+        toast.error("Can't create listing. Please try again.");
+      }
+    },
+  });
+
+  const handleGetStarted = () => {
+    if (listingDrafts.length >= 3) {
+      toast.error(
+        "You cannot create more than 3 drafts. Please continue to one of them or delete.",
+      );
+      return;
+    }
+    createMutate();
+  };
+
+  const { mutate: deleteMutate } = useMutation({
+    mutationFn: (id: string) => deleteDraft(id),
+    onMutate: async (id) => {
+      const previous = queryClient.getQueryData<ListingDraft[]>(
+        queryKeys.listingDrafts,
+      );
+      queryClient.setQueryData(
+        queryKeys.listingDrafts,
+        (old: ListingDraft[] = []) => old.filter((draft) => draft.id !== id),
+      );
+      return { previous };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(queryKeys.listingDrafts, context?.previous);
+      toast.error("Can't delete listing draft.");
+    },
+    onSuccess: () => {
+      toast.success("Successfully deleted draft");
+    },
+  });
+
   if (loading) {
     return <BahClientSkeleton />;
   }
 
   if (isError) {
-    return <div>Cant fetch listing drafts.</div>;
+    // router.push("/");
+    // router.refresh();
+    toast.error("Can't fetch your listing drafts");
+    return <BahClientSkeleton />;
   }
 
   return (
@@ -62,7 +126,7 @@ const BahClient = () => {
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-semibold">Finish your listing</h2>
             <div className="flex flex-col gap-4">
-              {listingDrafts.map((draft, index) => {
+              {listingDrafts.map((draft) => {
                 const { id, displayName, model, draftLastSavedAt, draftStep } =
                   draft;
                 const totalSteps = 8;
@@ -71,7 +135,7 @@ const BahClient = () => {
                   <div key={id} className="relative w-full h-fit">
                     <button
                       className="absolute z-10 sm:top-4 sm:right-4 top-2 right-2 w-fit h-fit cursor-pointer text-secondary/80 p-2 rounded-full hover:bg-accent/50"
-                      onClick={() => alert("hello")}
+                      onClick={() => deleteMutate(id)}
                     >
                       <RiDeleteBin6Line className="size-4" />
                     </button>
@@ -85,11 +149,9 @@ const BahClient = () => {
                         </div>
                         <div className="flex flex-col pr-8">
                           <h3 className="font-medium sm:text-lg text-base">
-                            {displayName
-                              ? displayName
-                              : `Your ${model?.type ? model.type : "Vehicle"} listing`}
+                            {displayName ? displayName : "Your Vehicle listing"}
                           </h3>
-                          <p className="sm:text-sm text-xs">{`Last edited ${draftLastSavedAt} ago`}</p>
+                          <p className="sm:text-sm text-xs">{`Last edited ${formatDate(draftLastSavedAt)}`}</p>
                         </div>
                       </div>
                       <div className="w-full flex flex-col">
@@ -113,19 +175,22 @@ const BahClient = () => {
 
           <div className="flex flex-col mt-6 gap-2">
             <h2 className="text-xl font-semibold">Start a new listing</h2>
-            <Link
-              href="/"
-              className="py-6 border-b border-border flex items-center gap-4 justify-between"
+            <button
+              onClick={() => handleGetStarted()}
+              disabled={createPending}
+              className="py-6 border-b border-border flex items-center gap-4 justify-between cursor-pointer"
             >
               <div className="flex items-center gap-8 font-medium text-lg">
                 <div className="relative">
                   <Bike className="size-7" />
                   <IoMdAddCircleOutline className="size-5 absolute -top-2 -right-4" />
                 </div>
-                Create a new listing
+                {createPending
+                  ? "Creating new listing..."
+                  : "Create a new listing"}
               </div>
               <FiChevronRight className="size-6" />
-            </Link>
+            </button>
           </div>
         </div>
       ) : (
@@ -179,7 +244,23 @@ const BahClient = () => {
               );
             })}
           </div>
-          <BahFooter />
+          <div className="fixed z-50 left-0 bottom-0 bg-card border-t border-border w-full py-6 px-4 sm:px-8 md:px-12 lg:px-16 flex sm:justify-end justify-center items-center">
+            <button
+              type="button"
+              onClick={handleGetStarted}
+              disabled={createPending}
+              className="py-3 px-8 flex items-center justify-center gap-2 w-full sm:w-fit text-base font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/80 transition-colors duration-200 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {createPending ? (
+                <>
+                  <span className="border-t border-border rounded-full animate-spin size-4" />
+                  Starting...
+                </>
+              ) : (
+                "Get Started"
+              )}
+            </button>
+          </div>
         </div>
       )}
     </>

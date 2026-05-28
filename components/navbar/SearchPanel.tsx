@@ -118,7 +118,7 @@ function LocationContent({ location, onSelect }: LocationContentProps) {
           value={location}
           onChange={(e) => onSelect(e.target.value)}
           placeholder="Search locations"
-          className="pl-10 h-12 text-sm rounded-xl border-border focus-visible:ring-0 focus-visible:border-foreground"
+          className="pl-10 h-12 text-sm"
         />
       </div>
 

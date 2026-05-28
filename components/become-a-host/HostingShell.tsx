@@ -11,7 +11,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HelpCircle } from "lucide-react";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 function getStepFromPath(pathname: string): number {
   const match = pathname.match(/\/steps\/(\d+)/);
@@ -58,7 +58,7 @@ export function HostingShell({
   return (
     <DraftProvider vehicleId={vehicleId} initialData={draft}>
       <StepFormProvider>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-card">
           {/* Navbar */}
           <header className="flex items-center justify-between bg-card sticky z-50 top-0 w-full py-6 px-4 sm:px-8 md:px-12 lg:px-16 h-24">
             <Link href="/" className="relative w-10 h-10 opacity-80">
@@ -72,7 +72,12 @@ export function HostingShell({
               />
             </Link>
 
-            <div className="flex items-center gap-4">
+            <SaveAndExitButton
+              vehicleId={vehicleId}
+              currentStep={currentStep}
+            />
+
+            {/* <div className="flex items-center gap-4">
               <Link
                 href="/hosting"
                 className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm flex items-center gap-2"
@@ -81,15 +86,12 @@ export function HostingShell({
                 Get help
               </Link>
 
-              <SaveAndExitButton
-                vehicleId={vehicleId}
-                currentStep={currentStep}
-              />
-            </div>
+              
+            </div> */}
           </header>
 
           {/* Step content */}
-          <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-12">
+          <main className="flex-1 max-w-3xl w-full mx-auto pb-30 px-4 sm:px-8 md:px-12 lg:px-16 bg-card">
             {children}
           </main>
         </div>
