@@ -5,6 +5,7 @@ import NextTopLoader from "nextjs-toploader";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
+import { SessionGuard } from "@/lib/SessionGuard";
 // import { SessionGuard } from "@/lib/SessionGuard";
 
 const inter = Inter({
@@ -33,7 +34,7 @@ export default function RootLayout({
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* <SessionGuard /> */}
+        <SessionGuard />
         <NextTopLoader color="oklch(0.45 0.15 255)" showSpinner={false} />
         <Toaster />
         <Providers>

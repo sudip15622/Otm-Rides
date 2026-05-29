@@ -91,7 +91,7 @@ export function HostingShell({
           </header>
 
           {/* Step content */}
-          <main className="flex-1 max-w-3xl w-full mx-auto pb-30 px-4 sm:px-8 md:px-12 lg:px-16 bg-card">
+          <main className="flex-1 max-w-3xl w-full mx-auto pb-36 px-4 sm:px-8 md:px-12 lg:px-16 bg-card">
             {children}
           </main>
         </div>

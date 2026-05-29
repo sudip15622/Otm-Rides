@@ -16,6 +16,7 @@ import { StepFooter } from "@/components/become-a-host/StepFooter";
 import { queryKeys } from "@/lib/query-keys";
 import {
   SaveStep1FormData,
+  saveStep1PartialSchema,
   saveStep1Schema,
   VehicleType,
 } from "@/schemas/become-a-host";
@@ -66,7 +67,7 @@ const COLOR_PRESETS = [
 export function Step1Form({ vehicleId }: { vehicleId: string }) {
   const router = useRouter();
   const { draft, updateDraft } = useDraft();
-  const { registerGetFormData, setIsFormValid } = useStepForm();
+  const { registerGetFormData, registerCanSaveCheck } = useStepForm();
   const [brandOpen, setBrandOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const currentYear = new Date().getFullYear();
@@ -95,12 +96,25 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
   // Register form getter for Save & Exit
   useEffect(() => {
     registerGetFormData(() => form.getValues());
-  }, [form, registerGetFormData]);
+    registerCanSaveCheck(() => {
+      const dirtyFields = Object.keys(form.formState.dirtyFields);
 
-  // Keep shell buttons in sync with current form validity
-  useEffect(() => {
-    setIsFormValid(form.formState.isValid);
-  }, [form.formState.isValid, setIsFormValid]);
+      if (dirtyFields.length === 0) {
+        return true;
+      }
+
+      const currentValues = form.getValues() as Record<string, unknown>;
+      const dirtyValues = Object.fromEntries(
+        dirtyFields.map((key) => [key, currentValues[key]]),
+      );
+
+      return saveStep1PartialSchema.safeParse(dirtyValues).success;
+    });
+
+    return () => {
+      registerCanSaveCheck(() => true);
+    };
+  }, [registerGetFormData, registerCanSaveCheck, form]);
 
   // Brands & Models
   const { data: brands = [] } = useQuery<Brand[]>({

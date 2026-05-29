@@ -1,5 +1,4 @@
 import api from "./axios";
-import axios from "axios";
 
 declare module "axios" {
   interface InternalAxiosRequestConfig {
@@ -55,7 +54,7 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError);
-      // window.dispatchEvent(new CustomEvent("auth:sessionExpired"));
+      window.dispatchEvent(new CustomEvent("auth:sessionExpired"));
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

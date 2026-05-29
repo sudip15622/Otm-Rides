@@ -1,22 +1,18 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useRef,
-  useCallback,
-  useState,
-} from "react";
+import { createContext, useContext, useRef, useCallback } from "react";
 
 type GetFormDataFn = () => Record<string, any> | null;
+type CanSaveCheckFn = () => boolean;
 
 interface StepFormContextValue {
   // Each step form calls this on mount to register its getValues fn
   registerGetFormData: (fn: GetFormDataFn) => void;
   // SaveAndExitButton calls this to read current form state
   getFormData: () => Record<string, any> | null;
-  // Step form updates this so shell-level controls can react to validity
-  setIsFormValid: (isValid: boolean) => void;
-  isFormValid: boolean;
+  // Each step can register partial-save validation logic
+  registerCanSaveCheck: (fn: CanSaveCheckFn) => void;
+  // SaveAndExitButton calls this on click for authoritative partial validation
+  canSaveCheck: () => boolean;
 }
 
 const StepFormContext = createContext<StepFormContextValue | null>(null);
@@ -24,7 +20,7 @@ const StepFormContext = createContext<StepFormContextValue | null>(null);
 export function StepFormProvider({ children }: { children: React.ReactNode }) {
   // useRef so registering doesn't cause re-renders
   const getFormDataRef = useRef<GetFormDataFn>(() => null);
-  const [isFormValid, setIsFormValid] = useState(true);
+  const canSaveCheckRef = useRef<CanSaveCheckFn>(() => false);
 
   const registerGetFormData = useCallback((fn: GetFormDataFn) => {
     getFormDataRef.current = fn;
@@ -34,9 +30,22 @@ export function StepFormProvider({ children }: { children: React.ReactNode }) {
     return getFormDataRef.current();
   }, []);
 
+  const registerCanSaveCheck = useCallback((fn: CanSaveCheckFn) => {
+    canSaveCheckRef.current = fn;
+  }, []);
+
+  const canSaveCheck = useCallback(() => {
+    return canSaveCheckRef.current();
+  }, []);
+
   return (
     <StepFormContext.Provider
-      value={{ registerGetFormData, getFormData, setIsFormValid, isFormValid }}
+      value={{
+        registerGetFormData,
+        getFormData,
+        registerCanSaveCheck,
+        canSaveCheck,
+      }}
     >
       {children}
     </StepFormContext.Provider>

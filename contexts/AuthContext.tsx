@@ -4,7 +4,7 @@ import api from "@/lib/axios";
 import { User } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import "@/lib/interceptors";
+// import "@/lib/interceptors";
 import { getCurrentUser } from "@/lib/api/profile";
 
 const BACKEND_API_URL =

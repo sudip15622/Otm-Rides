@@ -18,7 +18,7 @@ export function SaveAndExitButton({
   currentStep,
 }: SaveAndExitButtonProps) {
   const router = useRouter();
-  const { getFormData, isFormValid } = useStepForm();
+  const { getFormData, canSaveCheck } = useStepForm();
 
   // Steps 3 and 6 save individually on upload — no batch partial save needed
   const queryClient = useQueryClient();
@@ -50,10 +50,9 @@ export function SaveAndExitButton({
 
   async function handleSaveAndExit() {
     const stepsWithPartialSave = [1, 2, 3, 5, 6];
-    const shouldDisableForInvalidForm =
-      stepsWithPartialSave.includes(currentStep) && !isFormValid;
 
-    if (shouldDisableForInvalidForm) {
+    if (stepsWithPartialSave.includes(currentStep) && !canSaveCheck()) {
+      toast.error("Please fix invalid fields before saving.");
       return;
     }
 
@@ -73,10 +72,7 @@ export function SaveAndExitButton({
   return (
     <button
       onClick={handleSaveAndExit}
-      disabled={
-        saveAndExitMutation.isPending ||
-        (currentStep !== 4 && currentStep !== 7 && !isFormValid)
-      }
+      disabled={saveAndExitMutation.isPending}
       className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
     >
       {saveAndExitMutation.isPending ? (

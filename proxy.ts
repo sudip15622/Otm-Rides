@@ -1,16 +1,8 @@
 // proxy.ts — only this file needs changing
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-const PROTECTED_ROUTES = [
-  "/profile",
-  "/trips",
-  "/account-settings",
-  "/hosting",
-  "/become-a-host",
-];
-
-const AUTH_ROUTES = ["/login-signup"];
+// import { isAuthRoute, isProtectedRoute } from "@/lib/routes";
+import { isAuthRoute, isProtectedRoute } from "./lib/routes";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,13 +11,8 @@ export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has("refresh_token");
 
   // Exact prefix match — /profile matches, but /profiles or / does not
-  const isProtected = PROTECTED_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
-
-  const isAuth = AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
+  const isProtected = isProtectedRoute(pathname);
+  const isAuth = isAuthRoute(pathname);
 
   if (!hasSession && isProtected) {
     const loginUrl = new URL("/login-signup", request.url);
