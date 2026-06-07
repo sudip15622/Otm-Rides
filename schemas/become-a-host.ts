@@ -56,13 +56,12 @@ export const IdentityDocType = {
 
 // ── Step 1 — Basics ───────────────────────────────────────────────────────────
 
-const step1BaseSchema = z.object({
-  type: z.enum(VehicleType, { error: "Please select a vehicle type" }),
+export const saveStep1Schema = z.object({
+  type: z.enum(VehicleType, { error: "Invalid vehicle type selected" }),
 
   // both optional at field level — superRefine handles the OR logic
-  modelId: z.uuid({ error: "Please select brand and model" }).optional(),
-  customBrand: z.string().min(2).optional(),
-  customModel: z.string().min(2).optional(),
+  brandId: z.uuid({ error: "Please select a brand" }),
+  modelId: z.uuid({ error: "Please select a model" }),
 
   year: z
     .number({ error: "Year must be a number" })
@@ -70,38 +69,15 @@ const step1BaseSchema = z.object({
     .min(2000, "Year must be 2000 or later")
     .max(new Date().getFullYear(), "Year cannot be in the future"),
 
-  color: z.string("Color is required").min(1, "Please enter or select color"),
+  // color: z.string().min(2, "Color is required"),
   plateNumber: z
-    .string("Registration number is required")
-    .min(5, "Registration number is too short.")
-    .max(50, "Registration number is too long"),
-});
-
-// Strict — used on "Next" click
-export const saveStep1Schema = step1BaseSchema.superRefine((data, ctx) => {
-  const hasSeeded = !!data.modelId;
-  const hasCustom = !!data.customBrand && !!data.customModel;
-
-  if (!hasSeeded && !hasCustom) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["modelId"],
-      message: "Select both model and brand or enter a custom brand and model",
-    });
-  }
-
-  if (hasSeeded && (data.customBrand || data.customModel)) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["customBrand"],
-      message:
-        "Cannot select a model and enter a custom model at the same time",
-    });
-  }
+    .string()
+    .min(4, "Plate number is too short")
+    .max(50, "Plate number is too long"),
 });
 
 // Partial — used on "Save & Exit", no cross-field checks
-export const saveStep1PartialSchema = step1BaseSchema.partial();
+export const saveStep1PartialSchema = saveStep1Schema.partial();
 
 export type SaveStep1FormData = z.infer<typeof saveStep1Schema>;
 export type SaveStep1PartialFormData = z.infer<typeof saveStep1PartialSchema>;

@@ -1,52 +1,33 @@
 "use client";
 import { createContext, useContext, useRef, useCallback } from "react";
 
-type GetFormDataFn = () => Record<string, any> | null;
-type CanSaveCheckFn = () => boolean;
+// Returns only the fields that are safe to save (individually valid),
+// or null if there is nothing worth saving (e.g. untouched empty step).
+type GetSaveDataFn = () => Record<string, any> | null;
 
 interface StepFormContextValue {
-  // Each step form calls this on mount to register its getValues fn
-  registerGetFormData: (fn: GetFormDataFn) => void;
-  // SaveAndExitButton calls this to read current form state
-  getFormData: () => Record<string, any> | null;
-  // Each step can register partial-save validation logic
-  registerCanSaveCheck: (fn: CanSaveCheckFn) => void;
-  // SaveAndExitButton calls this on click for authoritative partial validation
-  canSaveCheck: () => boolean;
+  // Each step registers this on mount so the navbar can call it
+  registerGetSaveData: (fn: GetSaveDataFn) => void;
+  // StepNavbar calls this on "Save & Exit" click
+  getSaveData: () => Record<string, any> | null;
 }
 
 const StepFormContext = createContext<StepFormContextValue | null>(null);
 
 export function StepFormProvider({ children }: { children: React.ReactNode }) {
-  // useRef so registering doesn't cause re-renders
-  const getFormDataRef = useRef<GetFormDataFn>(() => null);
-  const canSaveCheckRef = useRef<CanSaveCheckFn>(() => false);
+  // useRef so registration never triggers a re-render
+  const getSaveDataRef = useRef<GetSaveDataFn>(() => null);
 
-  const registerGetFormData = useCallback((fn: GetFormDataFn) => {
-    getFormDataRef.current = fn;
+  const registerGetSaveData = useCallback((fn: GetSaveDataFn) => {
+    getSaveDataRef.current = fn;
   }, []);
 
-  const getFormData = useCallback(() => {
-    return getFormDataRef.current();
-  }, []);
-
-  const registerCanSaveCheck = useCallback((fn: CanSaveCheckFn) => {
-    canSaveCheckRef.current = fn;
-  }, []);
-
-  const canSaveCheck = useCallback(() => {
-    return canSaveCheckRef.current();
+  const getSaveData = useCallback((): Record<string, any> | null => {
+    return getSaveDataRef.current();
   }, []);
 
   return (
-    <StepFormContext.Provider
-      value={{
-        registerGetFormData,
-        getFormData,
-        registerCanSaveCheck,
-        canSaveCheck,
-      }}
-    >
+    <StepFormContext.Provider value={{ registerGetSaveData, getSaveData }}>
       {children}
     </StepFormContext.Provider>
   );

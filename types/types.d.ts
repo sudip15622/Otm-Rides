@@ -176,11 +176,12 @@ export interface DraftVehicle {
 
   // Step 1 — Basics
   type: VehicleType | null;
+  brandId: string | null;
   modelId: string | null;
-  customBrand: string | null;
-  customModel: string | null;
+  // customBrand: string | null;
+  // customModel: string | null;
   year: number | null;
-  color: string | null;
+  // color: string | null;
   plateNumber: string | null;
 
   // Step 2 — Specs
@@ -218,6 +219,7 @@ export interface DraftVehicle {
   location: Location | null;
 
   // Relations
+  brand: Brand | null;
   model: VehicleModel | null;
   images: VehicleImage[];
   documents: VehicleDocument[];

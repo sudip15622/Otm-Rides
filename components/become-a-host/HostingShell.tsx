@@ -6,12 +6,6 @@ import { fetchDraft } from "@/lib/api/become-a-host";
 import { queryKeys } from "@/lib/query-keys";
 import { DraftProvider } from "@/contexts/draftContext";
 import { StepFormProvider } from "@/contexts/stepFormContext";
-import { SaveAndExitButton } from "./SaveExitButton";
-import Link from "next/link";
-import Image from "next/image";
-import { HelpCircle } from "lucide-react";
-
-const TOTAL_STEPS = 8;
 
 function getStepFromPath(pathname: string): number {
   const match = pathname.match(/\/steps\/(\d+)/);
@@ -33,67 +27,62 @@ export function HostingShell({
     data: draft,
     isLoading,
     isError,
+    error,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.draft(vehicleId),
     queryFn: () => fetchDraft(vehicleId),
-    retry: false,
+    retry: 1, // one automatic retry for transient failures
     staleTime: Infinity,
   });
 
   useEffect(() => {
-    if (!isLoading && (isError || !draft)) {
+    if (isLoading) return;
+
+    // FIX #1: Only redirect on a genuine "not found" (404).
+    // Any other error (500, network blip) shows a retry UI instead of
+    // silently kicking the user back to the start and losing their place.
+    if (!isError && !draft) {
       router.replace("/become-a-host");
     }
   }, [draft, isError, isLoading, router]);
 
   if (isLoading) {
-    // Return a minimal shell — replace with your skeleton component
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; // replace with your skeleton
   }
 
-  if (isError || !draft) {
-    return null;
+  // FIX #1: Transient error — show retry, don't redirect
+  if (isError) {
+    const is404 = error instanceof Error && error.message.includes("404");
+
+    if (is404) {
+      // Draft truly doesn't exist — redirect is appropriate
+      router.replace("/become-a-host");
+      return null;
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-muted-foreground text-sm">
+          Something went wrong loading your draft.
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="py-2 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          Try again
+        </button>
+      </div>
+    );
   }
+
+  if (!draft) return null;
 
   return (
     <DraftProvider vehicleId={vehicleId} initialData={draft}>
       <StepFormProvider>
-        <div className="min-h-screen flex flex-col bg-card">
-          {/* Navbar */}
-          <header className="flex items-center justify-between bg-card sticky z-50 top-0 w-full py-6 px-4 sm:px-8 md:px-12 lg:px-16 h-24">
-            <Link href="/" className="relative w-10 h-10 opacity-80">
-              <Image
-                src="/otmrides_black-01.png"
-                alt="logo"
-                fill
-                sizes="48px"
-                className="object-cover w-full h-full"
-                priority
-              />
-            </Link>
-
-            <SaveAndExitButton
-              vehicleId={vehicleId}
-              currentStep={currentStep}
-            />
-
-            {/* <div className="flex items-center gap-4">
-              <Link
-                href="/hosting"
-                className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm flex items-center gap-2"
-              >
-                <HelpCircle className="size-4" />
-                Get help
-              </Link>
-
-              
-            </div> */}
-          </header>
-
-          {/* Step content */}
-          <main className="flex-1 max-w-3xl w-full mx-auto pb-36 px-4 sm:px-8 md:px-12 lg:px-16 bg-card">
-            {children}
-          </main>
+        <div className="w-full flex flex-col min-h-screen mx-auto px-4 sm:px-8 md:px-12 lg:px-16 bg-card">
+          {children}
         </div>
       </StepFormProvider>
     </DraftProvider>

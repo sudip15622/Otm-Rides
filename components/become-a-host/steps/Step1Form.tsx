@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +20,7 @@ import {
   saveStep1Schema,
   VehicleType,
 } from "@/schemas/become-a-host";
-import { Check, ChevronDown, Plus } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -41,6 +41,8 @@ import {
 } from "@/components/ui/popover";
 import type { Brand, VehicleModel } from "@/types/types";
 import { Input } from "@/components/ui/input";
+import StepNavbar from "../StepNavbar";
+import { toast } from "sonner";
 
 const VEHICLE_TYPES = [
   {
@@ -57,70 +59,85 @@ const VEHICLE_TYPES = [
   },
 ];
 
-const COLOR_PRESETS = [
-  { label: "Red", value: "#ef4444" },
-  { label: "Blue", value: "#3b82f6" },
-  { label: "White", value: "#ffffff" },
-  { label: "Black", value: "#000000" },
-];
-
 export function Step1Form({ vehicleId }: { vehicleId: string }) {
   const router = useRouter();
   const { draft, updateDraft } = useDraft();
-  const { registerGetFormData, registerCanSaveCheck } = useStepForm();
+  const { registerGetSaveData } = useStepForm();
   const [brandOpen, setBrandOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 26;
-  const [selectedBrandId, setSelectedBrandId] = useState(
-    draft.model?.brandId ?? "",
-  );
 
-  useStepGuard(1);
+  // FIX #4: useStepGuard now returns isBlocked.
+  // Rendering null while redirect is pending eliminates the flash.
+  const { isBlocked } = useStepGuard(1);
 
   const form = useForm<SaveStep1FormData>({
     resolver: zodResolver(saveStep1Schema),
     defaultValues: {
       type: draft.type ?? undefined,
+      brandId: draft.brandId ?? undefined,
       modelId: draft.modelId ?? undefined,
-      customBrand: draft.customBrand ?? undefined,
-      customModel: draft.customModel ?? undefined,
       year: draft.year ?? minYear,
-      color: draft.color ?? undefined,
       plateNumber: draft.plateNumber ?? undefined,
     },
+    // FIX #8: "onTouched" so errors only show after a field is touched,
+    // but isValid reflects the true state from the initial defaultValues.
+    // This means Continue is enabled when draft data is already valid.
     mode: "onChange",
     reValidateMode: "onSubmit",
   });
 
-  // Register form getter for Save & Exit
-  useEffect(() => {
-    registerGetFormData(() => form.getValues());
-    registerCanSaveCheck(() => {
-      const dirtyFields = Object.keys(form.formState.dirtyFields);
+  // FIX #5: Use a ref to hold the form instance so the registered closure
+  // always reads the latest getValues() without going stale.
+  // `form` from useForm() is stable, but being explicit avoids future issues
+  // if the form is ever recreated.
+  const formRef = useRef(form);
+  formRef.current = form;
 
-      if (dirtyFields.length === 0) {
-        return true;
+  // Register getSaveData — runs once on mount.
+  // Uses formRef.current so it always sees the latest form state.
+  useEffect(() => {
+    registerGetSaveData(() => {
+      const values = formRef.current.getValues();
+
+      // Try full partial parse first (fast path — all fields valid)
+      const fullResult = saveStep1PartialSchema.safeParse(values);
+      if (fullResult.success) {
+        // Return null if every field is empty/undefined (nothing worth saving)
+        const hasAnyValue = Object.values(fullResult.data).some(
+          (v) => v !== undefined && v !== "" && v !== null,
+        );
+        return hasAnyValue ? fullResult.data : null;
       }
 
-      const currentValues = form.getValues() as Record<string, unknown>;
-      const dirtyValues = Object.fromEntries(
-        dirtyFields.map((key) => [key, currentValues[key]]),
-      );
+      // Slow path — strip field by field, keep only individually valid values
+      const safe: Record<string, any> = {};
+      for (const [key, fieldSchema] of Object.entries(
+        saveStep1PartialSchema.shape,
+      )) {
+        const val = (values as Record<string, any>)[key];
+        if (
+          val !== undefined &&
+          val !== "" &&
+          val !== null &&
+          (fieldSchema as any).safeParse(val).success
+        ) {
+          safe[key] = val;
+        }
+      }
 
-      return saveStep1PartialSchema.safeParse(dirtyValues).success;
+      return Object.keys(safe).length > 0 ? safe : null;
     });
-
-    return () => {
-      registerCanSaveCheck(() => true);
-    };
-  }, [registerGetFormData, registerCanSaveCheck, form]);
+  }, [registerGetSaveData]); // stable ref — runs once
 
   // Brands & Models
-  const { data: brands = [] } = useQuery<Brand[]>({
+  const { data: brands = [], isError: brandsError } = useQuery<Brand[]>({
     queryKey: queryKeys.brands(),
     queryFn: getBrands,
   });
+
+  const selectedBrandId = form.watch("brandId") ?? "";
 
   const { data: models = [] } = useQuery<VehicleModel[]>({
     queryKey: queryKeys.models(selectedBrandId),
@@ -128,15 +145,17 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
     enabled: !!selectedBrandId,
   });
 
-  const selectedBrand = brands.find((brand) => brand.id === selectedBrandId);
   const selectedYear = form.watch("year") ?? minYear;
 
-  // Save mutation
+  // Save mutation — isLoading passed directly to StepFooter (FIX #6)
   const saveMutation = useMutation({
     mutationFn: (data: SaveStep1FormData) => saveStepApi(vehicleId, 1, data),
     onSuccess: (updated) => {
       updateDraft(updated);
-      router.push(`/become-a-host/${vehicleId}/step/2`);
+      router.push(`/become-a-host/${vehicleId}/steps/2`);
+    },
+    onError: () => {
+      toast.error("Failed to save. Please try again.");
     },
   });
 
@@ -146,10 +165,21 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
     saveMutation.mutate(form.getValues());
   }
 
+  // FIX #4: Render nothing while guard redirect is in flight
+  if (isBlocked) return null;
+
   return (
     <>
-      <div className="flex flex-col gap-8">
+      <StepNavbar currentStep={1} vehicleId={vehicleId} />
+      <main className="flex flex-col gap-8 w-full max-w-2xl mx-auto pt-24 pb-34">
         <h1 className="font-bold text-3xl">Tell us about your vehicle</h1>
+
+        {/* FIX #11: Show error if brands failed to load */}
+        {brandsError && (
+          <p className="text-destructive text-sm">
+            Failed to load brands. Please refresh the page.
+          </p>
+        )}
 
         <form action="#" className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
@@ -204,70 +234,91 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
               )}
             />
           </div>
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-5 items-start">
-              <div className="flex flex-col gap-4 flex-1">
-                <Label>Brand</Label>
-                <Popover open={brandOpen} onOpenChange={setBrandOpen}>
-                  <PopoverTrigger
-                    render={
-                      <Button
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={brandOpen}
-                        className="h-12 w-full bg-card hover:bg-accent/50 cursor-pointer justify-between rounded-2xl px-4"
-                      />
-                    }
-                  >
-                    <span className="truncate text-left">
-                      {selectedBrand?.name ?? "Select brand"}
-                    </span>
-                    <ChevronDown className="size-4 opacity-60" />
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="p-0">
-                    <Command>
-                      <CommandInput placeholder="Search brands..." />
-                      <CommandList>
-                        <CommandEmpty>No brand found.</CommandEmpty>
-                        <CommandGroup>
-                          {brands.map((brand) => {
-                            const isSelected = brand.id === selectedBrandId;
 
-                            return (
-                              <CommandItem
-                                key={brand.id}
-                                value={brand.name}
-                                onSelect={() => {
-                                  setSelectedBrandId(brand.id);
-                                  form.setValue("modelId", undefined, {
-                                    shouldDirty: true,
-                                    shouldValidate: true,
-                                  });
-                                  setBrandOpen(false);
-                                  setModelOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "size-4",
-                                    isSelected ? "opacity-100" : "opacity-0",
-                                  )}
-                                />
-                                <span>{brand.name}</span>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <Controller
-                name="modelId"
-                control={form.control}
-                render={({ field, fieldState }) => (
+          <div className="flex gap-5 items-start">
+            <Controller
+              name="brandId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <>
+                  <div className="flex flex-col gap-4 flex-1">
+                    <Label>Brand</Label>
+                    <Popover open={brandOpen} onOpenChange={setBrandOpen}>
+                      <PopoverTrigger
+                        render={
+                          <Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={brandOpen}
+                            className="h-12 w-full bg-card hover:bg-accent/50 cursor-pointer justify-between rounded-2xl px-4"
+                          />
+                        }
+                      >
+                        <span className="truncate text-left">
+                          {brands.find((m) => m.id === field.value)?.name ??
+                            "Select brand"}
+                        </span>
+                        <ChevronDown className="size-4 opacity-60" />
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="p-0">
+                        <Command>
+                          <CommandInput placeholder="Search brands..." />
+                          <CommandList>
+                            <CommandEmpty>No brand found.</CommandEmpty>
+                            <CommandGroup>
+                              {brands.map((brand) => {
+                                const isSelected = brand.id === field.value;
+                                return (
+                                  <CommandItem
+                                    key={brand.id}
+                                    value={brand.name}
+                                    onSelect={() => {
+                                      field.onChange(brand.id);
+                                      form.setValue(
+                                        "modelId",
+                                        undefined as never,
+                                        {
+                                          shouldDirty: true,
+                                          shouldValidate: true,
+                                        },
+                                      );
+                                      setBrandOpen(false);
+                                      setModelOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "size-4",
+                                        isSelected
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    <span>{brand.name}</span>
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {fieldState.error && (
+                      <p className="text-destructive text-xs">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            />
+
+            <Controller
+              name="modelId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <>
                   <div className="flex flex-col gap-4 flex-1">
                     <Label>Model</Label>
                     <Popover open={modelOpen} onOpenChange={setModelOpen}>
@@ -300,7 +351,6 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                             <CommandGroup>
                               {models.map((model) => {
                                 const isSelected = model.id === field.value;
-
                                 return (
                                   <CommandItem
                                     key={model.id}
@@ -327,20 +377,20 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    {fieldState.error && (
+                      <p className="text-destructive text-xs">
+                        {fieldState.error.message}
+                      </p>
+                    )}
                   </div>
-                )}
-              />
-            </div>
-            {form.formState.errors.modelId && (
-              <p className="text-destructive text-xs">
-                {form.formState.errors.modelId.message as string}
-              </p>
-            )}
+                </>
+              )}
+            />
           </div>
 
           <div className="flex flex-col">
             <div className="flex items-center justify-between gap-4 mb-4">
-              <Label>Manufacuturing year</Label>
+              <Label>Manufacturing year</Label>
               <span className="text-base font-bold">{selectedYear}</span>
             </div>
             <Controller
@@ -359,7 +409,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                     className="w-full"
                   />
                   {fieldState.error && (
-                    <p className="text-destructive text-xs mt-1">
+                    <p className="text-destructive text-xs">
                       {fieldState.error.message}
                     </p>
                   )}
@@ -373,74 +423,19 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
           </div>
 
           <div className="flex flex-col gap-4">
-            <Label htmlFor="vehicle-color">Color</Label>
-
-            <Controller
-              name="color"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      value={field.value ?? ""}
-                      onChange={(event) => field.onChange(event.target.value)}
-                      placeholder="#000000"
-                      className="h-12 flex-1 rounded-2xl px-4"
-                    />
-                    <div className="flex flex-1 items-center justify-start gap-2">
-                      {COLOR_PRESETS.map((item) => {
-                        const { value } = item;
-                        const isSelected = value === field.value;
-                        return (
-                          <div
-                            key={value}
-                            onClick={() => field.onChange(value)}
-                            className={cn(
-                              "w-8 h-8 rounded-full cursor-pointer border border-border/50 shadow-sm",
-                              isSelected ? "ring-2 ring-secondary" : "",
-                            )}
-                            style={{ background: value }}
-                          />
-                        );
-                      })}
-                      <label
-                        htmlFor="vehicle-color"
-                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-border/50 bg-card shadow-sm"
-                      >
-                        <Plus className="size-4" />
-                        <input
-                          id="vehicle-color"
-                          type="color"
-                          value={field.value ?? "#000000"}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
-                          className="sr-only"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  {fieldState.error && (
-                    <p className="text-destructive text-xs">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <Label htmlFor="vehicle-color">Registration Number</Label>
+            <Label htmlFor="plate-number">Registration Number</Label>
             <Controller
               name="plateNumber"
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
                   <Input
+                    id="plate-number"
                     value={field.value ?? ""}
-                    onChange={(event) => field.onChange(event.target.value)}
-                    placeholder="e.g., Ba 2 Pa 2024"
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
+                    placeholder="e.g., BA 2 PA 1234"
                     className="h-12 rounded-2xl px-4"
                   />
                   {fieldState.error && (
@@ -453,12 +448,17 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
             />
           </div>
         </form>
-      </div>
+      </main>
+
       <StepFooter
         vehicleId={vehicleId}
         currentStep={1}
         onContinue={handleContinue}
+        // FIX #6: Pass mutation isPending directly — no local state wrapper
         isLoading={saveMutation.isPending}
+        // FIX #8: isValid is computed from defaultValues (seeded from draft),
+        // so this is enabled if the draft data is already complete.
+        // With mode:"onTouched", errors only appear after fields are touched.
         isContinueDisabled={!form.formState.isValid}
       />
     </>
