@@ -110,7 +110,7 @@ interface LocationContentProps {
 }
 function LocationContent({ location, onSelect }: LocationContentProps) {
   return (
-    <div className="overflow-y-auto max-h-60 md:max-h-full">
+    <div className="overflow-y-auto max-h-full">
       {/* Search input */}
       <div className="relative mb-4">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -165,7 +165,7 @@ function DateContent({
   numMonths = 2,
 }: DateContentProps) {
   return (
-    <div className="flex w-full justify-center overflow-y-auto max-h-60 md:max-h-full">
+    <div className="flex w-full justify-center overflow-y-auto max-h-full">
       <Calendar
         mode="single"
         selected={dateRange?.to ?? dateRange?.from}
@@ -193,7 +193,7 @@ interface VehicleContentProps {
 }
 function VehicleContent({ vehicleType, onSelect }: VehicleContentProps) {
   return (
-    <div className="py-1 overflow-y-auto max-h-60 md:max-h-full">
+    <div className="py-1 overflow-y-auto max-h-full">
       <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3 px-0.5">
         Vehicle type
       </p>
@@ -348,7 +348,7 @@ export default function SearchPanel({
           type="button"
           onClick={onOpenSearch}
           className={cn(
-            "flex md:hidden items-center justify-center gap-x-2 rounded-full shadow-sm border border-border px-8 mb-6 bg-card text-sm font-medium transition-[shadow, width, padding] duration-320 ease-in-out",
+            "flex md:hidden items-center justify-center gap-x-2 rounded-full shadow-sm border border-border px-8 mb-6 bg-card text-sm font-medium transition-[shadow, width, padding] duration-320 ease-in-out cursor-pointer",
             showFullNav ? "py-5 w-full" : "py-3 w-fit",
           )}
         >
@@ -368,7 +368,7 @@ export default function SearchPanel({
               exit={{ opacity: 0, scale: 0.97, y: -6 }}
               transition={{ type: "spring", stiffness: 400, damping: 40 }}
               onClick={onCloseSearch}
-              className="absolute z-10 md:hidden top-1/2 -translate-y-2/3 right-0 rounded-full p-2.5 bg-card shadow-md border border-border"
+              className="absolute z-10 md:hidden top-1/2 -translate-y-2/3 right-0 rounded-full p-2.5 bg-card shadow-md border border-border cursor-pointer"
             >
               <RxCross2 className="size-5" />
             </motion.button>

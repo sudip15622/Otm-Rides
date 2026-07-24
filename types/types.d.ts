@@ -162,7 +162,6 @@ export interface ListingDraft {
   displayName: string | null;
   draftStep: number;
   draftLastSavedAt: string | number | Date;
-  model: { type: VehicleType } | null;
 }
 
 // Full draft shape — used inside the become-a-host flow
@@ -178,8 +177,8 @@ export interface DraftVehicle {
   type: VehicleType | null;
   brandId: string | null;
   modelId: string | null;
-  // customBrand: string | null;
-  // customModel: string | null;
+  brandName: string | null;
+  modelName: string | null;
   year: number | null;
   // color: string | null;
   plateNumber: string | null;
@@ -227,4 +226,17 @@ export interface DraftVehicle {
 
   createdAt: string | number | Date;
   updatedAt: string | number | Date;
+}
+
+// types.ts — shared types for the location step
+
+export type LocationSubStep = 1 | 2 | 3;
+
+export interface LocationState {
+  lat: number;
+  lng: number;
+  address: string;
+  city: string;
+  district: string;
+  province: string;
 }

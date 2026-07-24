@@ -69,7 +69,10 @@ const ActionFoot = () => {
           <FootItem name="Profile" link="/profile" icon={User2} />
         </>
       ) : (
-        <FootItem name="Log in" link="/login-signup" icon={User2} />
+        <>
+          <FootItem name="Host" link="/become-a-host" icon={Bike} />
+          <FootItem name="Log in" link="/login-signup" icon={User2} />
+        </>
       )}
     </div>
   );

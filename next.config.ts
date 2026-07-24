@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   // Disable static optimization for dynamic routes
   // trailingSlash: false,
   images: {
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",

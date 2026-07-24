@@ -1,4 +1,4 @@
-import { HostingShell } from "@/components/become-a-host/HostingShell";
+import HostingShell from "@/components/become-a-host/shell/HostingShell";
 
 export default async function DraftLayout({
   children,

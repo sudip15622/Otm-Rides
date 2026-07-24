@@ -1,31 +1,36 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useDraft } from "@/contexts/DraftContext";
+import { useDraftNavbar } from "@/contexts/DraftNavbarContext";
+import { useRouteGuard } from "@/hooks/useRouteGuard";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDraft } from "@/contexts/draftContext";
-import { useStepForm } from "@/contexts/stepFormContext";
-import { useStepGuard } from "@/hooks/useStepGuard";
+import { Controller, useForm } from "react-hook-form";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  saveStepApi,
-  getBrands,
-  getModelsByBrand,
-} from "@/lib/api/become-a-host";
-import { StepFooter } from "@/components/become-a-host/StepFooter";
-import { queryKeys } from "@/lib/query-keys";
-import {
-  SaveStep1FormData,
+  SaveStep1Dto,
   saveStep1PartialSchema,
   saveStep1Schema,
   VehicleType,
-} from "@/schemas/become-a-host";
-import { Check, ChevronDown } from "lucide-react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
+} from "@/lib/schemas/draft";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { extractValidFields } from "@/lib/extractValidFields";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { getBrands, getModelsByBrand, saveStep } from "@/lib/api/draft";
+import { ROUTES, getRoute } from "@/lib/host/routes";
+import { toast } from "sonner";
+import Footer from "../shell/Footer";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Brand, VehicleModel } from "@/types/types";
+import { queryKeys } from "@/lib/query-keys";
+import { Check, ChevronDown } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -34,15 +39,11 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import type { Brand, VehicleModel } from "@/types/types";
+import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import StepNavbar from "../StepNavbar";
-import { toast } from "sonner";
+import { getApiError } from "@/lib/api/errors";
+
+const ROUTE = getRoute("basic-info");
 
 const VEHICLE_TYPES = [
   {
@@ -59,137 +60,98 @@ const VEHICLE_TYPES = [
   },
 ];
 
-export function Step1Form({ vehicleId }: { vehicleId: string }) {
+const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
   const router = useRouter();
   const { draft, updateDraft } = useDraft();
-  const { registerGetSaveData } = useStepForm();
+  const { registerSaveData } = useDraftNavbar();
+  const { isBlocked } = useRouteGuard();
+
   const [brandOpen, setBrandOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 26;
+  const minYear = currentYear - 16;
 
-  // FIX #4: useStepGuard now returns isBlocked.
-  // Rendering null while redirect is pending eliminates the flash.
-  const { isBlocked } = useStepGuard(1);
-
-  const form = useForm<SaveStep1FormData>({
+  const form = useForm<SaveStep1Dto>({
     resolver: zodResolver(saveStep1Schema),
     defaultValues: {
       type: draft.type ?? undefined,
       brandId: draft.brandId ?? undefined,
       modelId: draft.modelId ?? undefined,
       year: draft.year ?? minYear,
-      plateNumber: draft.plateNumber ?? undefined,
+      plateNumber: draft.plateNumber ?? "",
     },
-    // FIX #8: "onTouched" so errors only show after a field is touched,
-    // but isValid reflects the true state from the initial defaultValues.
-    // This means Continue is enabled when draft data is already valid.
-    mode: "onChange",
-    reValidateMode: "onSubmit",
+    mode: "onTouched",
   });
 
-  // FIX #5: Use a ref to hold the form instance so the registered closure
-  // always reads the latest getValues() without going stale.
-  // `form` from useForm() is stable, but being explicit avoids future issues
-  // if the form is ever recreated.
   const formRef = useRef(form);
   formRef.current = form;
 
-  // Register getSaveData — runs once on mount.
-  // Uses formRef.current so it always sees the latest form state.
   useEffect(() => {
-    registerGetSaveData(() => {
-      const values = formRef.current.getValues();
+    registerSaveData(() =>
+      extractValidFields(
+        saveStep1PartialSchema,
+        formRef.current.getValues() as Record<string, unknown>,
+      ),
+    );
+  }, [registerSaveData]);
 
-      // Try full partial parse first (fast path — all fields valid)
-      const fullResult = saveStep1PartialSchema.safeParse(values);
-      if (fullResult.success) {
-        // Return null if every field is empty/undefined (nothing worth saving)
-        const hasAnyValue = Object.values(fullResult.data).some(
-          (v) => v !== undefined && v !== "" && v !== null,
-        );
-        return hasAnyValue ? fullResult.data : null;
-      }
-
-      // Slow path — strip field by field, keep only individually valid values
-      const safe: Record<string, any> = {};
-      for (const [key, fieldSchema] of Object.entries(
-        saveStep1PartialSchema.shape,
-      )) {
-        const val = (values as Record<string, any>)[key];
-        if (
-          val !== undefined &&
-          val !== "" &&
-          val !== null &&
-          (fieldSchema as any).safeParse(val).success
-        ) {
-          safe[key] = val;
-        }
-      }
-
-      return Object.keys(safe).length > 0 ? safe : null;
-    });
-  }, [registerGetSaveData]); // stable ref — runs once
-
-  // Brands & Models
+  //brands and models
   const { data: brands = [], isError: brandsError } = useQuery<Brand[]>({
     queryKey: queryKeys.brands(),
     queryFn: getBrands,
   });
 
+  const selectedYear = form.watch("year") ?? minYear;
   const selectedBrandId = form.watch("brandId") ?? "";
 
-  const { data: models = [] } = useQuery<VehicleModel[]>({
+  const { data: models = [], isError: modelsError } = useQuery<VehicleModel[]>({
     queryKey: queryKeys.models(selectedBrandId),
     queryFn: () => getModelsByBrand(selectedBrandId),
     enabled: !!selectedBrandId,
   });
 
-  const selectedYear = form.watch("year") ?? minYear;
-
-  // Save mutation — isLoading passed directly to StepFooter (FIX #6)
   const saveMutation = useMutation({
-    mutationFn: (data: SaveStep1FormData) => saveStepApi(vehicleId, 1, data),
+    mutationFn: (data: SaveStep1Dto) =>
+      saveStep(vehicleId, ROUTE.stepNumber!, data),
     onSuccess: (updated) => {
       updateDraft(updated);
-      router.push(`/become-a-host/${vehicleId}/steps/2`);
+      const nextIndex = ROUTES.findIndex((r) => r.slug === ROUTE.slug) + 1;
+      const nextSlug = ROUTES[nextIndex].slug;
+      router.push(`/become-a-host/${vehicleId}/${nextSlug}`);
     },
-    onError: () => {
-      toast.error("Failed to save. Please try again.");
+    onError: (error) => {
+      const { status, message } = getApiError(error);
+      if (status === 409) {
+        toast.error("Please verify the details and try again.");
+      } else {
+        toast.error(message ?? "Failed to save. Please try again.");
+      }
     },
   });
 
-  async function handleContinue() {
-    const valid = await form.trigger();
-    if (!valid) return;
-    saveMutation.mutate(form.getValues());
-  }
-
-  // FIX #4: Render nothing while guard redirect is in flight
   if (isBlocked) return null;
 
   return (
     <>
-      <StepNavbar currentStep={1} vehicleId={vehicleId} />
-      <main className="flex flex-col gap-8 w-full max-w-2xl mx-auto pt-24 pb-34">
-        <h1 className="font-bold text-3xl">Tell us about your vehicle</h1>
-
-        {/* FIX #11: Show error if brands failed to load */}
-        {brandsError && (
-          <p className="text-destructive text-sm">
-            Failed to load brands. Please refresh the page.
+      <div className="pb-32 w-full mx-auto max-w-xl flex flex-col gap-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-bold text-3xl">
+            Provide vehicles basic information
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Tell us either you are listing bike or scooter as well as provide
+            brand details.
           </p>
-        )}
-
-        <form action="#" className="flex flex-col gap-6">
+        </div>
+        <form className="flex flex-col gap-8">
           <div className="flex flex-col gap-4">
-            <Label>Vehicle type</Label>
+            <Label>Select vehicle type</Label>
             <Controller
               name="type"
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="flex items-center gap-5">
+                  <div className="grid gap-5 grid-cols-1 xs:grid-cols-2">
                     {VEHICLE_TYPES.map((vehicleType) => {
                       const { title, value, description, image } = vehicleType;
                       const isSelected = field.value === value;
@@ -198,24 +160,24 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                           key={value}
                           onClick={() => field.onChange(value)}
                           className={cn(
-                            "flex flex-col flex-1 border shadow-sm items-center justify-center gap-y-2 p-6 rounded-2xl cursor-pointer",
+                            "flex flex-row xs:flex-col border shadow-sm items-center xs:justify-center gap-y-2 xs:p-4 p-2 rounded-2xl cursor-pointer",
                             isSelected
                               ? "border-foreground bg-accent/60"
                               : "border-border/50 hover:border-foreground/40 hover:bg-background",
                           )}
                         >
-                          <div className="relative w-auto h-auto">
+                          <div className="relative w-auto h-auto gap-4">
                             <Image
                               src={image}
                               alt={title}
-                              width={40}
-                              height={40}
+                              width={56}
+                              height={56}
                               priority
                               loading="eager"
                               className="w-auto h-auto object-cover"
                             />
                           </div>
-                          <div className="flex flex-col text-center">
+                          <div className="flex flex-col xs:text-center">
                             <h3 className="font-bold text-sm">{title}</h3>
                             <p className="text-xs text-muted-foreground">
                               {description}
@@ -235,13 +197,13 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
             />
           </div>
 
-          <div className="flex gap-5 items-start">
+          <div className="grid gap-5 grid-cols-1 xs:grid-cols-2">
             <Controller
               name="brandId"
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="flex flex-col gap-4 flex-1">
+                  <div className="flex flex-col gap-4">
                     <Label>Brand</Label>
                     <Popover open={brandOpen} onOpenChange={setBrandOpen}>
                       <PopoverTrigger
@@ -251,7 +213,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                             variant="outline"
                             role="combobox"
                             aria-expanded={brandOpen}
-                            className="h-12 w-full bg-card hover:bg-accent/50 cursor-pointer justify-between rounded-2xl px-4"
+                            className="h-12 w-full bg-accent border border-secondary/50 cursor-pointer justify-between rounded-2xl px-4"
                           />
                         }
                       >
@@ -262,7 +224,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                         <ChevronDown className="size-4 opacity-60" />
                       </PopoverTrigger>
                       <PopoverContent align="start" className="p-0">
-                        <Command>
+                        <Command className="w-full">
                           <CommandInput placeholder="Search brands..." />
                           <CommandList>
                             <CommandEmpty>No brand found.</CommandEmpty>
@@ -278,10 +240,10 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                                       form.setValue(
                                         "modelId",
                                         undefined as never,
-                                        {
-                                          shouldDirty: true,
-                                          shouldValidate: true,
-                                        },
+                                        // {
+                                        //   shouldDirty: true,
+                                        //   shouldValidate: true,
+                                        // },
                                       );
                                       setBrandOpen(false);
                                       setModelOpen(false);
@@ -319,7 +281,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="flex flex-col gap-4 flex-1">
+                  <div className="flex flex-col gap-4">
                     <Label>Model</Label>
                     <Popover open={modelOpen} onOpenChange={setModelOpen}>
                       <PopoverTrigger
@@ -330,7 +292,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                             role="combobox"
                             aria-expanded={modelOpen}
                             disabled={!selectedBrandId}
-                            className="w-full h-12 px-4 cursor-pointer justify-between rounded-2xl bg-card hover:bg-accent/50"
+                            className="w-full h-12 px-4 cursor-pointer justify-between rounded-2xl bg-accent border border-secondary/50 "
                           />
                         }
                         className="w-full"
@@ -432,9 +394,7 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
                   <Input
                     id="plate-number"
                     value={field.value ?? ""}
-                    onChange={(event) => {
-                      field.onChange(event.target.value);
-                    }}
+                    onChange={field.onChange}
                     placeholder="e.g., BA 2 PA 1234"
                     className="h-12 rounded-2xl px-4"
                   />
@@ -448,19 +408,15 @@ export function Step1Form({ vehicleId }: { vehicleId: string }) {
             />
           </div>
         </form>
-      </main>
-
-      <StepFooter
-        vehicleId={vehicleId}
-        currentStep={1}
-        onContinue={handleContinue}
-        // FIX #6: Pass mutation isPending directly — no local state wrapper
-        isLoading={saveMutation.isPending}
-        // FIX #8: isValid is computed from defaultValues (seeded from draft),
-        // so this is enabled if the draft data is already complete.
-        // With mode:"onTouched", errors only appear after fields are touched.
-        isContinueDisabled={!form.formState.isValid}
-      />
+        <Footer
+          vehicleId={vehicleId}
+          isLoading={saveMutation.isPending}
+          isContinueDisabled={!form.formState.isValid}
+          onContinue={form.handleSubmit((data) => saveMutation.mutate(data))}
+        />
+      </div>
     </>
   );
-}
+};
+
+export default BasicInfoForm;

@@ -148,7 +148,7 @@ export default function ProfileClient() {
         <button
           onClick={performSignOut}
           disabled={loading}
-          className="relative flex items-center gap-5 text-base text-foreground/80 font-medium"
+          className="relative flex items-center gap-5 text-base text-foreground/80 font-medium cursor-pointer"
         >
           <LogOut className="size-5" />
           Log Out
