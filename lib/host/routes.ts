@@ -84,19 +84,25 @@ export function sequenceIndexForDraftStep(draftStep: number): number {
 }
 
 export function maxReachableIndex(draftStep: number): number {
-  const firstLockedIndex = ROUTES.findIndex(
-    (r) =>
-      r.kind === "step" &&
-      r.stepNumber !== undefined &&
-      r.stepNumber > draftStep,
+  // The route matching the user's current working step —
+  // this is the actual ceiling. Nothing past it is reachable,
+  // including info pages that sit between it and the next step.
+  const currentStepRoute = ROUTES.find(
+    (r) => r.kind === "step" && r.stepNumber === draftStep,
   );
-  if (firstLockedIndex === -1) return ROUTES.length - 1;
-  return firstLockedIndex - 1;
+
+  if (currentStepRoute) {
+    return sequenceIndexBySlug.get(currentStepRoute.slug)!;
+  }
+
+  // draftStep is past the last defined step (e.g. all steps done) —
+  // everything is reachable, including trailing info pages.
+  return ROUTES.length - 1;
 }
 
 export function getResumeSlug(draftStep: number): string {
-  // Resume at the last reachable route, not just the matching step slug
-  // const targetIndex = maxReachableIndex(draftStep);
-  // console.log(targetIndex);
-  return ROUTES[draftStep]?.slug ?? "overview";
+  // Resume at the last reachable route, not just the matching step slug —
+  // this correctly skips over info pages using the same logic as the guard.
+  const targetIndex = maxReachableIndex(draftStep);
+  return ROUTES[targetIndex]?.slug ?? "overview";
 }

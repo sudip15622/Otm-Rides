@@ -10,12 +10,12 @@ const AboutYourVehicle = ({ vehicleId }: { vehicleId: string }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 items-center justify-between gap-12 w-full mx-auto max-w-5xl md:pt-8 pt-4 pb-32">
       <div className="flex flex-col gap-4 order-2 md:order-1">
-        <div className="font-medium md:text-lg text-base">Step 1</div>
+        <div className="font-medium md:text-lg text-base">Phase 1</div>
         <h1 className="md:text-4xl text-3xl font-semibold mb-2">
           Tell us about your vehicle
         </h1>
         <p className="md:text-lg text-base">
-          In this step, we'll ask you which type of vehicle you have and what's
+          In this phase, we'll ask you which type of vehicle you have and what's
           the brand details as well as it's specifications. Then let us know the
           location where it's parked.
         </p>
@@ -24,7 +24,7 @@ const AboutYourVehicle = ({ vehicleId }: { vehicleId: string }) => {
       <div className="order-1 md:order-2 relative w-auto h-auto shrink mx-auto md:mx-0 md:ml-auto overflow-hidden border-r border-b border-secondary">
         <Image
           src="/about_your_vehicle_hero1.png"
-          alt="step-1-hero"
+          alt="phase-1-hero"
           width={400}
           height={400}
           priority
