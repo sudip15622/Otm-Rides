@@ -152,7 +152,7 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="grid gap-5 xs:grid-cols-2 grid-cols-1">
+                  <div className="grid grid-cols-2 gap-4">
                     {TRANSMISSION_TYPES.map((transmissionType) => {
                       const {
                         title,
@@ -166,14 +166,14 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
                           key={value}
                           onClick={() => field.onChange(value)}
                           className={cn(
-                            "flex xs:flex-col flex-row border shadow-sm items-center xs:justify-center xs:gap-2 gap-4 p-4 rounded-2xl cursor-pointer",
+                            "flex flex-col items-center text-center justify-center gap-2 border shadow-sm p-4 rounded-2xl cursor-pointer",
                             isSelected
                               ? "border-foreground bg-accent/60"
                               : "border-border/50 hover:border-foreground/40 hover:bg-background",
                           )}
                         >
-                          <Icon className="size-7" />
-                          <div className="flex flex-col xs:text-center">
+                          <Icon className="size-6" />
+                          <div className="flex flex-col">
                             <h3 className="font-bold text-sm">{title}</h3>
                             <p className="text-xs text-muted-foreground">
                               {description}
@@ -199,7 +199,7 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="grid gap-5 xs:grid-cols-2 grid-cols-1">
+                  <div className="grid grid-cols-2 gap-4">
                     {FUEL_TYPES.map((fuelType) => {
                       const {
                         title,
@@ -213,14 +213,14 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
                           key={value}
                           onClick={() => field.onChange(value)}
                           className={cn(
-                            "flex xs:flex-col flex-row border shadow-sm items-center xs:justify-center xs:gap-2 gap-4 p-4 rounded-2xl cursor-pointer",
+                            "flex flex-col items-center text-center justify-center gap-2 border shadow-sm p-4 rounded-2xl cursor-pointer",
                             isSelected
                               ? "border-foreground bg-accent/60"
                               : "border-border/50 hover:border-foreground/40 hover:bg-background",
                           )}
                         >
-                          <Icon className="size-7" />
-                          <div className="flex flex-col xs:text-center">
+                          <Icon className="size-6" />
+                          <div className="flex flex-col">
                             <h3 className="font-bold text-sm">{title}</h3>
                             <p className="text-xs text-muted-foreground">
                               {description}
@@ -254,7 +254,9 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
                     <Input
                       id="mileage"
                       value={
-                        Number.isNaN(field.value) ? "" : (field.value ?? "")
+                        Number.isNaN(field.value as number)
+                          ? ""
+                          : ((field.value as string | number | undefined) ?? "")
                       }
                       onChange={(e) => {
                         const raw = e.target.value;
@@ -285,7 +287,9 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
                     <Input
                       id="odometer"
                       value={
-                        Number.isNaN(field.value) ? "" : (field.value ?? "")
+                        Number.isNaN(field.value as number)
+                          ? ""
+                          : ((field.value as string | number | undefined) ?? "")
                       }
                       onChange={(e) => {
                         const raw = e.target.value;
@@ -311,7 +315,7 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="flex xs:items-center gap-5 flex-col xs:flex-row">
+                  <div className="grid xs:grid-cols-3 grid-cols-2 gap-4">
                     {CONDITION_TYPES.map((conditionType) => {
                       const {
                         title,
@@ -325,14 +329,14 @@ const SpecificationForm = ({ vehicleId }: { vehicleId: string }) => {
                           key={value}
                           onClick={() => field.onChange(value)}
                           className={cn(
-                            "flex xs:flex-col flex-row flex-1 border shadow-sm items-center xs:justify-center xs:gap-2 gap-4 p-4 rounded-2xl cursor-pointer",
+                            "flex flex-col items-center text-center justify-center gap-2 border shadow-sm p-4 rounded-2xl cursor-pointer",
                             isSelected
                               ? "border-foreground bg-accent/60"
                               : "border-border/50 hover:border-foreground/40 hover:bg-background",
                           )}
                         >
-                          <Icon className="size-7" />
-                          <div className="flex flex-col xs:text-center">
+                          <Icon className="size-6" />
+                          <div className="flex flex-col">
                             <h3 className="font-bold text-sm">{title}</h3>
                             <p className="text-xs text-muted-foreground">
                               {description}

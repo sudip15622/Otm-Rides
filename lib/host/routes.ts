@@ -53,15 +53,9 @@ export const ROUTES: RouteConfig[] = [
     phaseLabel: "Pricing & policies",
   },
   {
-    slug: "documents",
-    kind: "step",
-    stepNumber: 7,
-    phaseLabel: "Verification",
-  },
-  {
     slug: "review",
     kind: "step",
-    stepNumber: 8,
+    stepNumber: 7,
     phaseLabel: "Review & submit",
   },
 ];

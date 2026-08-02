@@ -151,7 +151,7 @@ const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <>
-                  <div className="grid gap-5 grid-cols-1 xs:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4">
                     {VEHICLE_TYPES.map((vehicleType) => {
                       const { title, value, description, image } = vehicleType;
                       const isSelected = field.value === value;
@@ -160,7 +160,7 @@ const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
                           key={value}
                           onClick={() => field.onChange(value)}
                           className={cn(
-                            "flex flex-row xs:flex-col border shadow-sm items-center xs:justify-center gap-y-2 xs:p-4 p-2 rounded-2xl cursor-pointer",
+                            "flex flex-col items-center text-center justify-center gap-2 border shadow-sm p-4 rounded-2xl cursor-pointer",
                             isSelected
                               ? "border-foreground bg-accent/60"
                               : "border-border/50 hover:border-foreground/40 hover:bg-background",
@@ -177,7 +177,7 @@ const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
                               className="w-auto h-auto object-cover"
                             />
                           </div>
-                          <div className="flex flex-col xs:text-center">
+                          <div className="flex flex-col">
                             <h3 className="font-bold text-sm">{title}</h3>
                             <p className="text-xs text-muted-foreground">
                               {description}
@@ -213,7 +213,7 @@ const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
                             variant="outline"
                             role="combobox"
                             aria-expanded={brandOpen}
-                            className="h-12 w-full bg-accent border border-secondary/50 cursor-pointer justify-between rounded-2xl px-4"
+                            className="h-12 w-full border border-secondary/50 cursor-pointer justify-between rounded-2xl px-4"
                           />
                         }
                       >
@@ -292,7 +292,7 @@ const BasicInfoForm = ({ vehicleId }: { vehicleId: string }) => {
                             role="combobox"
                             aria-expanded={modelOpen}
                             disabled={!selectedBrandId}
-                            className="w-full h-12 px-4 cursor-pointer justify-between rounded-2xl bg-accent border border-secondary/50 "
+                            className="w-full h-12 px-4 cursor-pointer justify-between rounded-2xl border border-secondary/50 "
                           />
                         }
                         className="w-full"

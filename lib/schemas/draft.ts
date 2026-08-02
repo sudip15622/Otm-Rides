@@ -54,22 +54,12 @@ export const IdentityDocType = {
   DRIVING_LICENSE: "DRIVING_LICENSE",
 } as const;
 
-// undefined → field untouched, null → explicit "clear this field"
-function toPartialNullable<Shape extends z.ZodRawShape>(
-  schema: z.ZodObject<Shape>,
-) {
-  type NullableShape = {
-    [K in keyof Shape]: z.ZodOptional<z.ZodNullable<Shape[K]>>;
-  };
+function numberOrUndefined(val: unknown) {
+  return typeof val === "number" && Number.isNaN(val) ? undefined : val;
+}
 
-  const entries = Object.entries(schema.shape).map(
-    ([key, value]) =>
-      [key, (value as z.ZodTypeAny).nullable().optional()] as const,
-  );
-
-  const nullableShape = Object.fromEntries(entries) as unknown as NullableShape;
-
-  return z.object(nullableShape);
+function numberOrNull(val: unknown) {
+  return typeof val === "number" && Number.isNaN(val) ? null : val;
 }
 
 export const saveStep1Schema = z.object({
@@ -105,19 +95,19 @@ export const saveStep2Schema = z.object({
 
   fuelType: z.enum(FuelType, { error: "Please select a fuel type" }),
 
-  mileage: z
-    .number()
-    .int()
-    .min(0, "Mileage cannot be negative")
-    .optional()
-    .transform((val) => (Number.isNaN(val as number) ? undefined : val)),
-
-  odometer: z
-    .number()
-    .int()
-    .min(0, "Odometer cannot be negative")
-    .optional()
-    .transform((val) => (Number.isNaN(val as number) ? undefined : val)),
+  mileage: z.preprocess(
+    numberOrNull,
+    z.number().int().min(0, "Mileage cannot be negative").nullable().optional(),
+  ),
+  odometer: z.preprocess(
+    numberOrNull,
+    z
+      .number()
+      .int()
+      .min(0, "Odometer cannot be negative")
+      .nullable()
+      .optional(),
+  ),
 
   condition: z.enum(VehicleCondition, { error: "Please select a condition" }),
 });
@@ -194,6 +184,43 @@ export const saveStep5PartialSchema = saveStep5Schema.partial();
 export type SaveStep5Dto = z.infer<typeof saveStep5Schema>;
 export type SaveStep5PartialDto = z.infer<typeof saveStep5PartialSchema>;
 
+export const saveStep6Schema = z.object({
+  pricePerDay: z.preprocess(
+    numberOrUndefined,
+    z
+      .number({ error: "Price must be a number" })
+      .int()
+      .min(100, "Minimum price is NPR 100"),
+  ),
+
+  securityDeposit: z.preprocess(
+    numberOrNull,
+    z
+      .number()
+      .int()
+      .min(0, "Security deposit cannot be negative")
+      .nullable()
+      .optional(),
+  ),
+
+  cancellationPolicy: z.enum(CancellationPolicy, {
+    error: "Please select a cancellation policy",
+  }),
+  fuelPolicy: z.enum(FuelPolicy, { error: "Please select a fuel policy" }),
+
+  allowOutstation: z.boolean().default(false),
+
+  usageNotes: z
+    .string()
+    .max(500, "Usage notes must be at most 500 characters")
+    .optional(),
+});
+
+export const saveStep6PartialSchema = saveStep6Schema.partial();
+
+export type SaveStep6Dto = z.infer<typeof saveStep6Schema>;
+export type SaveStep6PartialDto = z.infer<typeof saveStep6PartialSchema>;
+
 // ── Step schema map — index by step number ────────────
 
 export const fullStepSchemas: Record<number, z.ZodTypeAny> = {
@@ -202,6 +229,7 @@ export const fullStepSchemas: Record<number, z.ZodTypeAny> = {
   3: saveStep3Schema,
   4: saveStep4Schema,
   5: saveStep5Schema,
+  6: saveStep6Schema,
 };
 
 export const partialStepSchemas: Record<number, z.ZodTypeAny> = {
@@ -210,4 +238,5 @@ export const partialStepSchemas: Record<number, z.ZodTypeAny> = {
   3: saveStep3PartialSchema,
   4: saveStep4PartialSchema,
   5: saveStep5PartialSchema,
+  6: saveStep6PartialSchema,
 };
