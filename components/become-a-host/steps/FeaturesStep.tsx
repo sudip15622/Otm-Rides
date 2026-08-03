@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getFeatureIcon } from "@/lib/icons";
+import { getApiError } from "@/lib/api/errors";
 
 const ROUTE = getRoute("features");
 
@@ -69,7 +70,14 @@ const FeaturesStep = ({ vehicleId }: { vehicleId: string }) => {
       const nextSlug = ROUTES[nextIndex].slug;
       router.push(`/become-a-host/${vehicleId}/${nextSlug}`);
     },
-    onError: () => toast.error("Failed to save. Please try again."),
+    onError: (error) => {
+      const { status, message } = getApiError(error);
+      if (status === 409) {
+        toast.error("Your given title is already taken.");
+      } else {
+        toast.error(message ?? "Failed to save. Please try again.");
+      }
+    },
   });
 
   if (isBlocked) return null;

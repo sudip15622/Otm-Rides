@@ -77,7 +77,8 @@ export const saveStep1Schema = z.object({
   plateNumber: z
     .string()
     .min(4, "Plate number is too short")
-    .max(50, "Plate number is too long"),
+    .max(50, "Plate number is too long")
+    .trim(),
 });
 
 // Partial — used on "Save & Exit", no cross-field checks
@@ -118,11 +119,11 @@ export type SaveStep2Dto = z.infer<typeof saveStep2Schema>;
 export type SaveStep2PartialDto = z.infer<typeof saveStep2PartialSchema>;
 
 export const saveStep3Schema = z.object({
-  address: z.string().min(2, "Address is required"),
-  city: z.string().min(2, "City is required"),
-  district: z.string().min(2, "District is required"),
-  province: z.string().min(2, "Province is required"),
-  country: z.string().min(1),
+  address: z.string().min(2, "Address is required").trim(),
+  city: z.string().min(2, "City is required").trim(),
+  district: z.string().min(2, "District is required").trim(),
+  province: z.string().min(2, "Province is required").trim(),
+  country: z.string().min(1).trim(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
 });
@@ -165,7 +166,8 @@ export const saveStep5Schema = z.object({
   displayName: z
     .string()
     .min(10, "Title is too short")
-    .max(60, "Title is too long"),
+    .max(60, "Title is too long")
+    .trim(),
 
   featureIds: z
     .array(z.uuid({ error: "Invalid feature selected" }))
@@ -176,7 +178,11 @@ export const saveStep5Schema = z.object({
     .default([]),
 
   // free-text extras — maps to Vehicle.extraFeatures in the DB
-  additionalFeatures: z.string().max(500, "Description is too long").optional(),
+  additionalFeatures: z
+    .string()
+    .max(500, "Description is too long")
+    .trim()
+    .optional(),
 });
 
 export const saveStep5PartialSchema = saveStep5Schema.partial();
@@ -213,6 +219,7 @@ export const saveStep6Schema = z.object({
   usageNotes: z
     .string()
     .max(500, "Usage notes must be at most 500 characters")
+    .trim()
     .optional(),
 });
 

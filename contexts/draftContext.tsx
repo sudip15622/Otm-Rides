@@ -32,8 +32,10 @@ export function DraftProvider({
   });
 
   const updateDraft = useCallback(
-    (updated: DraftVehicle) =>
-      queryClient.setQueryData(queryKeys.draft(vehicleId), updated),
+    (updated: DraftVehicle) => {
+      queryClient.setQueryData(queryKeys.draft(vehicleId), updated);
+      queryClient.invalidateQueries({ queryKey: queryKeys.listingDrafts });
+    },
     [queryClient, vehicleId],
   );
 
