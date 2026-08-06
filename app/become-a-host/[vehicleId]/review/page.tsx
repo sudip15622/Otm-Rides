@@ -1,8 +1,8 @@
-import PricingStep from "@/components/become-a-host/steps/PricingStep";
+import ReviewStep from "@/components/become-a-host/steps/ReviewStep";
 
 const page = async ({ params }: { params: Promise<{ vehicleId: string }> }) => {
   const { vehicleId } = await params;
-  return <PricingStep vehicleId={vehicleId} />;
+  return <ReviewStep vehicleId={vehicleId} />;
 };
 
 export default page;

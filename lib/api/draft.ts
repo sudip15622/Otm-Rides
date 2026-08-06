@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { DraftVehicle, ListingDraft } from "@/types/types";
+import { DraftVehicle, ListingDraft, ListingStatus } from "@/types/types";
 import { AttachImageDto, ReorderImageDto } from "../schemas/draft";
 
 // ── Lookup data ───────────────────────────────────────────────────────────────
@@ -108,4 +108,16 @@ export async function setPrimaryImage(
 ): Promise<DraftVehicle> {
   const res = await api.patch(`/draft/${vehicleId}/images/${imageId}/primary`);
   return res.data;
+}
+
+export async function submitDraft(vehicleId: string): Promise<DraftVehicle> {
+  const { data } = await api.post<DraftVehicle>(`/draft/${vehicleId}/submit`);
+  return data;
+}
+
+export async function getListingStatus(
+  vehicleId: string,
+): Promise<ListingStatus> {
+  const { data } = await api.get(`/draft/${vehicleId}/status`);
+  return data;
 }

@@ -154,7 +154,8 @@ const LandingPage = () => {
 };
 
 function DraftCard({ draft }: { draft: ListingDraft }) {
-  const { id, displayName, draftStep, draftLastSavedAt } = draft;
+  const { id, displayName, draftStep, draftLastSavedAt, primaryImageUrl } =
+    draft;
   const resumeSlug = getResumeSlug(draftStep);
   return (
     <Link
@@ -162,15 +163,25 @@ function DraftCard({ draft }: { draft: ListingDraft }) {
       className="w-full px-2 sm:px-4 py-3 sm:py-5 rounded-xl border border-border hover:bg-accent/50 hover:border-secondary/50 transition-colors duration-200 ease-in-out flex items-center justify-between gap-4 overflow-hidden"
     >
       <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
-        <div className="bg-accent rounded-md p-3">
-          <Bike className="size-6" />
+        <div className="relative w-12 h-12 rounded-md overflow-hidden bg-accent flex items-center justify-center shrink-0">
+          {primaryImageUrl ? (
+            <Image
+              src={primaryImageUrl}
+              alt={displayName ?? "Vehicle"}
+              width={48}
+              height={48}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <Bike className="size-6" />
+          )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <h3 className="truncate font-medium leading-tight">
             {displayName ? displayName : "Your vehicle listing"}
           </h3>
           <p className="flex flex-row items-center gap-px text-xs sm:text-sm text-muted-foreground w-full truncate overflow-hidden">
-            <span>{`Step ${draftStep} of 8`}</span>
+            <span>{`Step ${draftStep} of ${7}`}</span>
             <Dot className="" />
             <span>{formatDate(draftLastSavedAt)}</span>
           </p>

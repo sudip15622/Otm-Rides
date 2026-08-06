@@ -2,6 +2,7 @@
 import { DraftProvider } from "@/contexts/DraftContext";
 import { DraftNavbarProvider } from "@/contexts/DraftNavbarContext";
 import { getDraft } from "@/lib/api/draft";
+import { getApiError } from "@/lib/api/errors";
 import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -25,31 +26,27 @@ const HostingShell = ({
   } = useQuery({
     queryKey: queryKeys.draft(vehicleId),
     queryFn: () => getDraft(vehicleId),
-
     retry: 1,
     staleTime: Infinity,
   });
 
-  useEffect(() => {
-    if (isLoading) return;
+  const { status } = getApiError(error);
+  const shouldRedirectHome =
+    !isLoading &&
+    ((isError && (status === 404 || status === 403)) || (!isError && !draft));
 
-    if (!isError && !draft) {
+  useEffect(() => {
+    if (shouldRedirectHome) {
       router.replace("/become-a-host");
     }
-  }, [draft, isError, isLoading, router]);
+  }, [shouldRedirectHome, router]);
 
-  if (isLoading) {
+  if (isLoading || shouldRedirectHome) {
     return <div>Loading...</div>;
   }
 
   if (isError) {
-    const is404 = error instanceof Error && error.message.includes("404");
-
-    if (is404) {
-      // Draft truly doesn't exist — redirect is appropriate
-      router.replace("/become-a-host");
-      return null;
-    }
+    // status is neither 404 nor 403 here — genuine unexpected error
     return (
       <div className="flex flex-col items-center justify-center w-full min-h-screen gap-4 bg-card pt-20">
         <p className="text-muted-foreground text-sm">

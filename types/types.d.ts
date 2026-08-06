@@ -162,6 +162,14 @@ export interface ListingDraft {
   displayName: string | null;
   draftStep: number;
   draftLastSavedAt: string | number | Date;
+  primaryImageUrl: string | null;
+}
+
+export interface ListingStatus {
+  id: string;
+  displayName: string | null;
+  status: VehicleStatus;
+  primaryImageUrl: string | null;
 }
 
 // Full draft shape — used inside the become-a-host flow

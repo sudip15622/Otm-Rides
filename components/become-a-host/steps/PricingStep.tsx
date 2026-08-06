@@ -205,7 +205,10 @@ const PricingStep = ({ vehicleId }: { vehicleId: string }) => {
             />
           </div>
           <div className="flex flex-col gap-4">
-            <Label htmlFor="securityDeposit">Security Deposit</Label>
+            <Label htmlFor="securityDeposit">
+              Security Deposit{" "}
+              <i className="text-xs text-muted-foreground">(Opt.)</i>
+            </Label>
             <Controller
               name="securityDeposit"
               control={form.control}
@@ -235,16 +238,24 @@ const PricingStep = ({ vehicleId }: { vehicleId: string }) => {
             />
           </div>
         </div>
+        <div className="text-xs text-muted-foreground -mt-4">
+          <i>
+            <b>Note: </b>The security deposit is collected directly by you from
+            the renter at vehicle pickup and refunded after the rental if no
+            damages, fines, or other applicable charges are incurred. The
+            platform does not process this payment.
+          </i>
+        </div>
 
         <PolicyPicker
-          label="Cancellation policy:"
+          label="Cancellation policy"
           name="cancellationPolicy"
           control={form.control}
           options={CANCELLATION_OPTIONS}
         />
 
         <PolicyPicker
-          label="Fuel policy:"
+          label="Fuel policy"
           name="fuelPolicy"
           control={form.control}
           options={FUEL_POLICY_OPTIONS}
@@ -266,6 +277,35 @@ const PricingStep = ({ vehicleId }: { vehicleId: string }) => {
                 checked={field.value ?? false}
                 onCheckedChange={field.onChange}
               />
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <Label htmlFor="usage-notes">
+            Any usage guides for renters?{" "}
+            <i className="text-xs text-muted-foreground">(Opt.)</i>
+          </Label>
+
+          <Controller
+            name="usageNotes"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <>
+                <textarea
+                  id="usage-notes"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="e.g., Must return vehicle in time, Not allowed to smoke near bike."
+                  rows={4}
+                  className="rounded-2xl px-4 py-3 border border-border/50 bg-background resize-none text-sm focus:outline-none focus:border-foreground/40"
+                />
+                {fieldState.error && (
+                  <p className="text-destructive text-xs">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
             )}
           />
         </div>

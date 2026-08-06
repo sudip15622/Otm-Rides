@@ -122,6 +122,7 @@ const FeaturesStep = ({ vehicleId }: { vehicleId: string }) => {
           <Label>
             Select features your{" "}
             {draft.type ? draft.type.toLowerCase() : "vehicle"} have
+            <i className="text-xs text-muted-foreground">(Opt.)</i>
           </Label>
           <Controller
             name="featureIds"
@@ -182,7 +183,8 @@ const FeaturesStep = ({ vehicleId }: { vehicleId: string }) => {
 
         <div className="flex flex-col gap-4">
           <Label htmlFor="additional-features">
-            Anything else worth mentioning? (optional)
+            Anything else worth mentioning?{" "}
+            <i className="text-xs text-muted-foreground">(Opt.)</i>
           </Label>
 
           <Controller

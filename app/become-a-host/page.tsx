@@ -25,7 +25,7 @@ const page = () => {
 
             {/* exit button  */}
             <Link
-              href="/hosting"
+              href="/"
               className="py-2 px-4 rounded-full border border-border hover:border-secondary/80 hover:bg-accent/50 duration-200 transition-colors ease-in-out font-medium text-sm"
             >
               Exit
